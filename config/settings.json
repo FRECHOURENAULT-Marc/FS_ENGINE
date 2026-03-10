@@ -1,0 +1,138 @@
+{
+    "projects": {
+        "073F1BC6-46C8-37AC-4C31-624249A26974": {
+            "config-debug": {
+                "additionalDependencies": [],
+                "additionalIncludeDirectories": [],
+                "additionalLibraryDirectories": [],
+                "preprocessorDefinitions": []
+            },
+            "config-release": {
+                "additionalDependencies": [],
+                "additionalIncludeDirectories": [],
+                "additionalLibraryDirectories": [],
+                "preprocessorDefinitions": []
+            },
+            "dependencies": [],
+            "dependents": [
+                "07A85B53-7FCE-7797-5583-4D1A4EB17B8B",
+                "273D634C-0195-3B89-6AAD-33F34AFE0877"
+            ],
+            "name": "FSCore",
+            "property-lib": true,
+            "property-pch": true,
+            "property-vcpkg": false,
+            "property-window": false
+        },
+        "07A85B53-7FCE-7797-5583-4D1A4EB17B8B": {
+            "config-debug": {
+                "additionalDependencies": [],
+                "additionalIncludeDirectories": [],
+                "additionalLibraryDirectories": [],
+                "preprocessorDefinitions": []
+            },
+            "config-release": {
+                "additionalDependencies": [],
+                "additionalIncludeDirectories": [],
+                "additionalLibraryDirectories": [],
+                "preprocessorDefinitions": []
+            },
+            "dependencies": [
+                "073F1BC6-46C8-37AC-4C31-624249A26974",
+                "07BB573E-227F-2B92-4743-292217A336EF"
+            ],
+            "dependents": [
+                "273D634C-0195-3B89-6AAD-33F34AFE0877",
+                "07EC4D08-3939-2D88-23A1-0F374E020B6A"
+            ],
+            "name": "FSEngine",
+            "property-lib": true,
+            "property-pch": true,
+            "property-vcpkg": false,
+            "property-window": false
+        },
+        "07BB573E-227F-2B92-4743-292217A336EF": {
+            "config-debug": {
+                "additionalDependencies": [],
+                "additionalIncludeDirectories": [],
+                "additionalLibraryDirectories": [],
+                "preprocessorDefinitions": []
+            },
+            "config-release": {
+                "additionalDependencies": [],
+                "additionalIncludeDirectories": [],
+                "additionalLibraryDirectories": [],
+                "preprocessorDefinitions": []
+            },
+            "dependencies": [],
+            "dependents": [
+                "07A85B53-7FCE-7797-5583-4D1A4EB17B8B",
+                "273D634C-0195-3B89-6AAD-33F34AFE0877"
+            ],
+            "name": "FSRender",
+            "property-lib": true,
+            "property-pch": true,
+            "property-vcpkg": false,
+            "property-window": false
+        },
+        "07EC4D08-3939-2D88-23A1-0F374E020B6A": {
+            "config-debug": {
+                "additionalDependencies": [],
+                "additionalIncludeDirectories": [],
+                "additionalLibraryDirectories": [],
+                "preprocessorDefinitions": []
+            },
+            "config-release": {
+                "additionalDependencies": [],
+                "additionalIncludeDirectories": [],
+                "additionalLibraryDirectories": [],
+                "preprocessorDefinitions": []
+            },
+            "dependencies": [
+                "07A85B53-7FCE-7797-5583-4D1A4EB17B8B"
+            ],
+            "dependents": [],
+            "name": "Demo",
+            "property-lib": false,
+            "property-pch": true,
+            "property-vcpkg": false,
+            "property-window": true
+        },
+        "273D634C-0195-3B89-6AAD-33F34AFE0877": {
+            "config-debug": {
+                "additionalDependencies": [],
+                "additionalIncludeDirectories": [],
+                "additionalLibraryDirectories": [],
+                "preprocessorDefinitions": []
+            },
+            "config-release": {
+                "additionalDependencies": [],
+                "additionalIncludeDirectories": [],
+                "additionalLibraryDirectories": [],
+                "preprocessorDefinitions": []
+            },
+            "dependencies": [
+                "07A85B53-7FCE-7797-5583-4D1A4EB17B8B",
+                "073F1BC6-46C8-37AC-4C31-624249A26974",
+                "07BB573E-227F-2B92-4743-292217A336EF"
+            ],
+            "dependents": [],
+            "name": "SandBox",
+            "property-lib": false,
+            "property-pch": true,
+            "property-vcpkg": false,
+            "property-window": true
+        }
+    },
+    "projects_name_to_guid": {
+        "Demo": "07EC4D08-3939-2D88-23A1-0F374E020B6A",
+        "FSCore": "073F1BC6-46C8-37AC-4C31-624249A26974",
+        "FSEngine": "07A85B53-7FCE-7797-5583-4D1A4EB17B8B",
+        "FSRender": "07BB573E-227F-2B92-4743-292217A336EF",
+        "SandBox": "273D634C-0195-3B89-6AAD-33F34AFE0877"
+    },
+    "solution_guid": "063328ED-6CAA-1BE5-644E-787B64AD1318",
+    "solution_name": "FSEngine",
+    "startup_project": "",
+    "version": "2.0"
+}
