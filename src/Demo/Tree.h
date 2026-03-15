@@ -8,7 +8,7 @@ public:
 	Tree();
 
 	void SetPosition(XMFLOAT3 position);
-	void SetScale(XMFLOAT3 scale);
+	void SetScale(float scale);
 
 };
 

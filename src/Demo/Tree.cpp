@@ -40,10 +40,10 @@ void Tree::SetPosition(XMFLOAT3 position)
 	}
 }
 
-void Tree::SetScale(XMFLOAT3 scale)
+void Tree::SetScale(float scale)
 {
 	for (TransformComponent* transform : m_transform)
 	{
-		transform->SetScale(scale.x, scale.y, scale.z);
+		transform->SetScale(scale);
 	}
 }

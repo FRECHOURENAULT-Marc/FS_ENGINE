@@ -105,8 +105,6 @@ void ECS::UpdateDeltaTime()
 		return;
 
 	float timeToSleep = targetFrameTime - m_deltaTime;
-	//std::cout << "Time to sleep : " << timeToSleep * 1000.0f << " ms" << std::endl;
-	//std::cout << "dt " << m_deltaTime * 1000.0f << " ms, target dt " << targetFrameTime * 1000 << "ms" << std::endl;
 	Sleep(timeToSleep * 1000);
 	m_deltaTime = targetFrameTime;
 }

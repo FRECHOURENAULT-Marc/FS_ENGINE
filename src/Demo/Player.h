@@ -11,6 +11,7 @@ class Player : public LivingEntity
 
 	int m_camID;
 	int m_armID;
+	int m_staticCamID;
 
 	void UpdateMousePosition(float dt);
 	void UpdateCameraRotation(float dt);

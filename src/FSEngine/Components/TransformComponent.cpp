@@ -60,6 +60,13 @@ TransformComponent::TransformComponent() : Component()
 	worldMatrix = Maths::Identity4x4();
 }
 
+Transform& TransformComponent::GetLocalTransform()
+{
+	if (m_dirty)
+		UpdateWorldMatrix();
+	return localTransform;
+}
+
 XMFLOAT3 TransformComponent::GetLocalPosition()
 {
 	return localTransform.pos;
@@ -70,21 +77,29 @@ XMFLOAT3 TransformComponent::GetWorldPosition()
 	return { world._41, world._42, world._43 };
 }
 
+//REWORK this
 XMFLOAT3 TransformComponent::GetRotation()
 {
-	return localTransform.GetYPR();
+	XMFLOAT4X4 m = GetWorldMatrix();
+	XMFLOAT3 yawPitchRoll;
+	utils::MatrixDecomposeRot(m, &yawPitchRoll);
+
+	return yawPitchRoll;
 }
 XMFLOAT3 TransformComponent::GetForward()
 {
-	return GetLocalTransform().forward;
+	XMFLOAT4X4 world = GetWorldMatrix();
+	return { world.m[2][0], world.m[2][1], world.m[2][2] };
 }
 XMFLOAT3 TransformComponent::GetUp()
 {
-	return GetLocalTransform().up;
+	XMFLOAT4X4 world = GetWorldMatrix();
+	return { world.m[1][0], world.m[1][1], world.m[1][2] };
 }
 XMFLOAT3 TransformComponent::GetRight()
 {
-	return GetLocalTransform().right;
+	XMFLOAT4X4 world = GetWorldMatrix();
+	return { world.m[0][0], world.m[0][1], world.m[0][2] };
 }
 
 XMFLOAT4X4 TransformComponent::GetLocalMatrix()
@@ -151,9 +166,9 @@ void TransformComponent::TranslateLocal(XMFLOAT3 delta)
 	MarkDirty();
 }
 
-void TransformComponent::SetScale(float sx, float sy, float sz)
+void TransformComponent::SetScale(float s)
 {
-	localTransform.SetScaling(sx, sy, sz);
+	localTransform.SetScaling(s, s, s);
 	MarkDirty();
 }
 

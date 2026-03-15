@@ -35,7 +35,6 @@
 #include "Systems/MeshWorldSystem.h"
 #include "Systems/StateMachineSystem.h"
 #include "Systems/EmitterSystem.h"
-#include "Systems/TransformSystem.h"
 #include "Systems/CameraSystem.h"
 #include "Systems/ColliderSystem.h"
 #include "Systems/LightSystem.h"

@@ -9,6 +9,9 @@ void Transform::Identity()
 {
 	pos = { 0, 0, 0 };
 	sca = { 1, 1, 1 };
+	yaw		= 0.0f;
+	pitch	= 0.0f;
+	roll	= 0.0f;
 	ResetRotation();
 }
 XMFLOAT4X4 Transform::GetWorld()
@@ -112,9 +115,6 @@ void Transform::Move(float dist)
 
 void Transform::ResetRotation()
 {
-	yaw		= 0.0f;
-	pitch	= 0.0f;
-	roll	= 0.0f;
 	forward	= { 0.0f, 0.0f, 1.0f };
 	right	= { 1.0f, 0.0f, 0.0f };
 	up		= { 0.0f, 1.0f, 0.0f };
@@ -173,17 +173,20 @@ void Transform::OrbitAroundAxis(XMFLOAT3& center, XMFLOAT3& axis, float radius, 
 	isInvWorldUpdated = false;
 }
 
-void Transform::SetYPR(float yaw, float pitch, float roll)
+void Transform::SetYPR(float _yaw, float _pitch, float _roll)
 {
 	ResetRotation();
-	AddYPR(yaw, pitch, roll);
+	yaw		= 0.0f;
+	pitch	= 0.0f;
+	roll	= 0.0f;
+	AddYPR(_yaw, _pitch, _roll);
 
 }
 void Transform::AddYPR(float _yaw, float _pitch, float _roll)
 {
-	ResetRotation();
 	if (_yaw == 0.0f && _pitch == 0.0f && _roll == 0.0f)
 		return;
+	ResetRotation();
 
 	XMVECTOR axisForward= XMLoadFloat3(&forward);
 	XMVECTOR axisRight = XMLoadFloat3(&right);

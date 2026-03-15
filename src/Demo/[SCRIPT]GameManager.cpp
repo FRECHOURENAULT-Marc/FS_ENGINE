@@ -55,8 +55,8 @@ void GameManager::OnUpdate()
     ECS& ecs = ECS::Get();
     float dt = ecs.GetDeltaTime();
 
-    //REPLAY
-    if (m_currentState == GAME_STATE::REPLAY)
+	//REPLAY : broken with new transform system
+    /*if (m_currentState == GAME_STATE::REPLAY)
     {
         if (FS_InputsManager::Get()->GetKeyDown(Keyboard::E))
         {
@@ -75,7 +75,7 @@ void GameManager::OnUpdate()
         }
 
         return;
-    }
+    }*/
 
     m_player->Update();
     //m_player->ApplyDamage(dt * 10.0f); // FOR TEST
@@ -93,8 +93,8 @@ void GameManager::OnUpdate()
     }
 
     //Dont move the entity when replaying
-    if (m_replayScript->IsPlaying())
-        return;
+    //if (m_replayScript->IsPlaying())
+    //    return;
 
     for (auto target : m_railgen->m_targets)
     {
@@ -115,7 +115,7 @@ void GameManager::GenerateDecor()
 
     trs->SetLocalPosition({ 0, -2.0f, 10.0f });
     trs->SetRotation(0.0f, 3.141592 / 2, 0.0f);
-    trs->SetScale(200.f, 0.0f, 200.0f);
+    trs->SetScale(200.f);
 
     int ground2ID = ecs.CreateEntity();
     TransformComponent* trs2 = ecs.AddComponent<TransformComponent>(ground2ID);
@@ -126,13 +126,13 @@ void GameManager::GenerateDecor()
 
     trs2->SetLocalPosition({ 0, -3.0f, 10.0f });
     trs2->SetRotation(0.0f, 3.141592 / 2, 0.0f);
-    trs2->SetScale(2000.f, 0.0f, 2000.0f);
+    trs2->SetScale(2000.f);
 
     for (int i = 0; i < 10; i++)
     {
         Tree* tree = new Tree();
         tree->SetPosition({ (float)(rand() % 200 - 100), 3.0f, (float)(rand() % 200 - 100) });
-        tree->SetScale({ 10.0f, 10.0f, 10.0f });
+        tree->SetScale(10.0f);
     }
 }
 

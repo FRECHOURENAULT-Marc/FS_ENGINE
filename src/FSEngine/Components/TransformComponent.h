@@ -21,7 +21,7 @@ public:
 	void Reset() override;
 	TransformComponent();
 
-	Transform& GetLocalTransform() { return localTransform; }
+	Transform& GetLocalTransform();
 
 	XMFLOAT3 GetLocalPosition();
 	XMFLOAT3 GetWorldPosition();
@@ -43,7 +43,7 @@ public:
 	void TranslateWorld(XMFLOAT3 delta);
 	void TranslateLocal(XMFLOAT3 delta);
 
-	void SetScale(float sx, float sy, float sz);
+	void SetScale(float s);
 
 	void RotateWorld(float yaw, float pitch, float roll);
 	void RotateLocal(float yaw, float pitch, float roll);

@@ -10,7 +10,7 @@ void Bullet::Create(XMFLOAT3 rot, XMFLOAT3 _pos)
 	TC->SetForward(rot);
 	//TC->SetDirection(_direct);
 	TC->SetLocalPosition(_pos);
-	TC->SetScale(0.5f, 0.5f, 0.5f);
+	TC->SetScale(0.5f);
 
 	ecs.AddComponent<VelocityComponent>(entityID)->SetVelocity(50);
 	MeshComponent* MC = ecs.AddComponent<MeshComponent>(entityID);
