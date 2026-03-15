@@ -77,7 +77,6 @@ void ECS::CreateSystems()
 	m_systems.push_back(new UpdateMeshWorldSystem());
 	m_systems.push_back(new StateMachineSystem());
 	m_systems.push_back(new EmitterSystem());
-	m_systems.push_back(new TransformSystem());
 	m_systems.push_back(new CameraSystem());
 	m_systems.push_back(new ColliderSystem());
 	m_systems.push_back(new LightSystem());
