@@ -203,7 +203,4 @@ void GeneratingRail::OnUpdate()
     }
 
     armTrs->SetWorldPosition(pos);
-    auto childPos = m_ecs->GetComponent<TransformComponent>(125)->GetWorldPosition();
-	std::cout << "Player Position: (" << pos.x << ", " << pos.y << ", " << pos.z << ")" << std::endl;
-	std::cout << "Player2 Position: (" << childPos.x << ", " << childPos.y << ", " << childPos.z << ")" << std::endl;
 }

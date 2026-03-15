@@ -181,6 +181,7 @@ void Transform::SetYPR(float yaw, float pitch, float roll)
 }
 void Transform::AddYPR(float _yaw, float _pitch, float _roll)
 {
+	ResetRotation();
 	if (_yaw == 0.0f && _pitch == 0.0f && _roll == 0.0f)
 		return;
 
@@ -189,21 +190,14 @@ void Transform::AddYPR(float _yaw, float _pitch, float _roll)
 	XMVECTOR axisUp = XMLoadFloat3(&up);
 	XMVECTOR quatRot = XMLoadFloat4(&quat);
 
-	if (_roll)
-	{
-		roll += _roll;
-		quatRot = XMQuaternionMultiply(quatRot, XMQuaternionRotationAxis(axisForward, _roll));
-	}
-	if (_pitch)
-	{
-		pitch += _pitch;
-		quatRot = XMQuaternionMultiply(quatRot, XMQuaternionRotationAxis(axisRight, _pitch));
-	}
-	if (_yaw)
-	{
-		yaw += _yaw;
-		quatRot = XMQuaternionMultiply(quatRot, XMQuaternionRotationAxis(axisUp, _yaw));
-	}
+	roll += _roll;
+	quatRot = XMQuaternionMultiply(quatRot, XMQuaternionRotationAxis(axisForward, roll));
+
+	pitch += _pitch;
+	quatRot = XMQuaternionMultiply(quatRot, XMQuaternionRotationAxis(axisRight, pitch));
+
+	yaw += _yaw;
+	quatRot = XMQuaternionMultiply(quatRot, XMQuaternionRotationAxis(axisUp, yaw));
 
 	quatRot = XMQuaternionNormalize(quatRot);
 	XMStoreFloat4(&quat, quatRot);
