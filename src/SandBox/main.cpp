@@ -39,7 +39,7 @@ enum ChildStates
 
 void TransparencePSOTest()
 {
-	for (int i = 5; i >= 0; i--)
+	for (int i = 1000; i >= 0; i--)
 	{
 		int e1 = m_ecs->CreateEntity();
 		m_ecs->AddComponent<TransformComponent>(e1)->SetWorldPosition({ 0, 0, (float) -i});

@@ -58,6 +58,8 @@ protected:
     std::vector<FS_3DObject*> m_3DAlphaObjects;
     std::vector<FS_Sprite*> m_Sprites;
 
+	void Reorder3DAlphaObjects();
+
     void UpdateObjects();
     void UpdateCameras();
     void Update3DObjects();
@@ -92,6 +94,9 @@ protected:
 
     ComPtr<ID3D12DescriptorHeap> m_SrvDescriptorHeap = nullptr;
     ComPtr<ID3D12RootSignature> m_RootSignature = nullptr;
+
+	float m_deltaTime = 0.0f;
+	float m_reOrderTimer = 0.0f;
 
     UINT m_CbvSrvDescriptorSize = 0;
     UINT m_CurrentSrvIndex = 0;

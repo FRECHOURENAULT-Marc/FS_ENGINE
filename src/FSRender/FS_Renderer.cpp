@@ -42,6 +42,7 @@ FS_Renderer::~FS_Renderer()
 
 void FS_Renderer::UpdateRender(float dt)
 {
+	m_deltaTime = dt;
 	MSG msg = { 0 };
 	if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
 	{
@@ -69,6 +70,50 @@ void FS_Renderer::BuildShaderAndPSO(std::string name, std::wstring path, std::ve
 	m_ShaderMap[name]->BuildShadersAndInputLayout(path, _Layout, isUI);
 	m_ShaderMap[name]->BuildPSO(GetRootSignature(), swap->m_BackBufferFormat, swap->m_DepthStencilFormat, isTransparent,
 		device->m_4xMsaaState, device->m_4xMsaaQuality);
+}
+
+struct Compare3DObjectsByDistance
+{
+	FS_3DObject* obj;
+	UploadBuffer<ObjectConstants>* CB;
+	UploadBuffer<MaterialConstants>* MB;
+
+	static bool operator()(FS_3DObject* a, FS_3DObject* b) {
+		return a->GetDistanceToCamera() > b->GetDistanceToCamera(); // du plus loin au plus proche
+	}
+};
+void FS_Renderer::Reorder3DAlphaObjects()
+{
+	m_reOrderTimer += m_deltaTime;
+	if (m_reOrderTimer < 0.25f)
+		return;
+	m_reOrderTimer = 0.0f;
+
+	std::vector<Compare3DObjectsByDistance> objectsToSort;
+
+	for(int i = 0; i < m_3DAlphaObjects.size(); i++)
+	{
+		Compare3DObjectsByDistance toSort;
+		toSort.obj = m_3DAlphaObjects[i];
+		toSort.CB = m_CBAlphas[i];
+		toSort.MB = m_MBAlphas[i];
+		objectsToSort.push_back(toSort);
+	}
+
+	//Trier les objets par distance à la caméra (depth)
+	std::sort(objectsToSort.begin(), objectsToSort.end(),
+		[](Compare3DObjectsByDistance a, Compare3DObjectsByDistance b) {
+			return a.obj->GetDistanceToCamera() > b.obj->GetDistanceToCamera(); // du plus loin au plus proche
+		}
+	);
+
+	for (int i = 0; i < m_3DAlphaObjects.size(); i++)
+	{
+		Compare3DObjectsByDistance sorted = objectsToSort[i];
+		m_3DAlphaObjects[i] = sorted.obj;
+		m_CBAlphas[i] = sorted.CB;
+		m_MBAlphas[i] = sorted.MB;
+	}
 }
 
 void FS_Renderer::UpdateObjects()
@@ -589,7 +634,7 @@ void FS_Renderer::Update3DAlphaObjects()
 	XMFLOAT3 camForward = cam->GetTransform().forward;
 	XMVECTOR cameraForward = XMLoadFloat3(&camForward);
 
-	bool isAllObjectsStatic = true;
+	Reorder3DAlphaObjects();
 
 	for (int i = 0; i < m_3DAlphaObjects.size(); i++)
 	{
@@ -603,7 +648,6 @@ void FS_Renderer::Update3DAlphaObjects()
 			continue;
 		object->SetDirty(false);
 
-		isAllObjectsStatic = false;
 		auto& cb = m_CBAlphas[i];
 		auto& mb = m_MBAlphas[i];
 
@@ -634,27 +678,6 @@ void FS_Renderer::Update3DAlphaObjects()
 		float depth = XMVectorGetX(XMVector3Dot(objPos - cameraPosition, cameraForward));
 		object->SetDistanceToCamera(depth);
 		//----Update par objet>
-	}
-
-	if(isAllObjectsStatic && cam->IsUpdatedThisFrame() == false)
-		return;
-
-	std::cout << "Objects are dirty or camera updated, refreshing data." << std::endl;
-
-	std::cout << "Camera position: (" << camPos.x << ", " << camPos.y << ", " << camPos.z << ")" << std::endl;
-
-	//Trier les objets par distance à la caméra (depth)
-	std::sort(m_3DAlphaObjects.begin(), m_3DAlphaObjects.end(),
-		[](FS_3DObject* a, FS_3DObject* b) {
-			return a->GetDistanceToCamera() > b->GetDistanceToCamera(); // du plus loin au plus proche
-		});
-	//TODO Trier les CBs et MBs en même temps que les objets
-
-	for(int i = 0; i < m_3DAlphaObjects.size(); i++)
-	{
-		auto world = m_3DAlphaObjects[i]->GetWorld();
-		XMFLOAT3 pos = { world.m[3][0], world.m[3][1], world.m[3][2] };
-		std::cout << "Object " << i << " position: (" << pos.x << ", " << pos.y << ", " << pos.z << "), depth: " << m_3DAlphaObjects[i]->GetDistanceToCamera() << std::endl;
 	}
 }
 void FS_Renderer::UpdateSprites()
