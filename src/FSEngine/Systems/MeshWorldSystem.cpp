@@ -12,6 +12,8 @@ void UpdateMeshWorldSystem::Update(float dt)
 		MeshComponent& mesh = meshs[i];
 		if (trs.IsActive() == false || mesh.IsActive() == false)
 			continue;
+		if (trs.IsUpdatedThisFrame() == false)
+			continue;
 		mesh.SetWorld(trs.GetWorldMatrix());
 	}
 }

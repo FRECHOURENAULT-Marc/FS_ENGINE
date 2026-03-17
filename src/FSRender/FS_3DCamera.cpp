@@ -1,5 +1,11 @@
 #include "pch.h"
 
+void FS_3DCamera::MakeDirty()
+{
+	m_IsDirty = true;
+	m_isUpdatedThisFrame = true;
+}
+
 FS_3DCamera::FS_3DCamera()
 {
 }
@@ -10,6 +16,8 @@ XMFLOAT3 FS_3DCamera::GetPosition()
 }
 void FS_3DCamera::Update()
 {
+	UpdateMatrix();
+
 	XMMATRIX viewCamera = XMLoadFloat4x4(&m_View3D);
 	XMMATRIX projCamera = XMLoadFloat4x4(&m_Proj);
 	XMMATRIX viewProj = viewCamera * projCamera;
@@ -25,16 +33,21 @@ void FS_3DCamera::Update()
 	XMStoreFloat4x4(&m_viewProj2D, viewProj2D);
 }
 
+void FS_3DCamera::AfterUpdate()
+{
+	SetUpdatedThisFrame(false);
+}
+
 void FS_3DCamera::SetPosition(float x, float y, float z)
 {
 	m_transform.pos = XMFLOAT3(x, y, z);
-	m_IsDirty = true;
+	MakeDirty();
 }
 
 void FS_3DCamera::SetPosition(const XMFLOAT3& v)
 {
 	m_transform.pos = v;
-	m_IsDirty = true;
+	MakeDirty();
 }
 
 void FS_3DCamera::SetWorld(XMFLOAT4X4 world)
@@ -46,7 +59,7 @@ void FS_3DCamera::SetWorld(XMFLOAT4X4 world)
 
 	m_transform.UpdateWorld();
 	m_transform.UpdateInvWorld();
-	m_IsDirty = true;
+	MakeDirty();
 }
 
 void FS_3DCamera::SetLens(float fovY, float aspect, float zn, float zf)

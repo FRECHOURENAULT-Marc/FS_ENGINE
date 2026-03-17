@@ -11,6 +11,7 @@ private:
 	int m_parent = -1;
 
 	bool m_dirty = true;
+	bool m_isUpdatedThisFrame = true;
 
 	void MarkDirty();
 	void UpdateChildrenDirty();
@@ -35,6 +36,9 @@ public:
 
 	XMFLOAT4X4 GetLocalMatrix();
 	XMFLOAT4X4 GetWorldMatrix();
+
+	bool IsUpdatedThisFrame() { return m_isUpdatedThisFrame; }
+	void SetUpdatedThisFrame(bool updated) { m_isUpdatedThisFrame = updated; }
 
 	void SetLocalPosition(XMFLOAT3 pos);
 	void SetWorldPosition(XMFLOAT3 pos);

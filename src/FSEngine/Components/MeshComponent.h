@@ -6,6 +6,8 @@ class MeshComponent : public Component
 
 	FS_3DObject* m_3dObject = nullptr; 
 
+	void MoveObjectToCorrectRenderVector(FS_Material* mat);
+
 public: 
 	MeshComponent();
 

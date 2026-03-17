@@ -37,18 +37,22 @@ void FS_ShaderPSO::BuildPSO(ID3D12RootSignature* rootSignature, DXGI_FORMAT back
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 
-	if(isTransparent)
+	m_isTransparent = isTransparent;
+	if(m_isTransparent)
 	{
 		// Blend standard alpha (src alpha over dest)
 		D3D12_RENDER_TARGET_BLEND_DESC rtBlend = {};
 		rtBlend.BlendEnable = TRUE;
 		rtBlend.LogicOpEnable = FALSE;
+
 		rtBlend.SrcBlend = D3D12_BLEND_SRC_ALPHA;
 		rtBlend.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
 		rtBlend.BlendOp = D3D12_BLEND_OP_ADD;
+
 		rtBlend.SrcBlendAlpha = D3D12_BLEND_ONE;
-		rtBlend.DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
+		rtBlend.DestBlendAlpha = D3D12_BLEND_ZERO;
 		rtBlend.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+
 		rtBlend.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 		D3D12_BLEND_DESC blendDesc = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
@@ -56,13 +60,9 @@ void FS_ShaderPSO::BuildPSO(ID3D12RootSignature* rootSignature, DXGI_FORMAT back
 		psoDesc.BlendState = blendDesc;
 
 		D3D12_DEPTH_STENCIL_DESC dsDesc = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-		// For transparent objects we must not write to depth buffer. Disable depth writes.
-		if(mIsUI)
-			dsDesc.DepthEnable = FALSE; // disable depth test so sprites render according to draw order
-		else
-			dsDesc.DepthEnable = TRUE;
+		dsDesc.DepthEnable = TRUE;
 		dsDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-		dsDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		dsDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
 		psoDesc.DepthStencilState = dsDesc;
 	}
 

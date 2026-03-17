@@ -32,7 +32,7 @@ public:
     MaterialManager() { instance = this; };
     static MaterialManager* Get() { return instance; };
 
-    //Create a new material in the renderer (if no tetxure specified, it apply only color)
+    //Create a new material in the renderer (if no texture specified, it apply only color)
     static void CreateMaterial(std::string shaderName, std::string materialName, std::string textureName = "", float roughness = 0.25f, XMFLOAT3 metallic = { 0.01f, 0.01f, 0.01f }, XMFLOAT4 diffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f });
     static int GetMaterialIndex(std::string materialName);
     static FS_Material* GetMaterial(std::string materialName);

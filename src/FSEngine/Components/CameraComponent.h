@@ -12,7 +12,7 @@ class CameraComponent : public Component
 public:
 	CameraComponent();
 
-	void Update(TransformComponent& transform);
+	void Update(XMFLOAT4X4 worldMtraix);
 
 	bool IsMainCamera() { return m_IsMainCamera; }
 

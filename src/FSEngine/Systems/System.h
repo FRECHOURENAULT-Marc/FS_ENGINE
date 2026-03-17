@@ -11,6 +11,7 @@ protected:
 public:
 
 	virtual void Update(float dt) {}; //override this
+	virtual void AfterUpdate(float dt) {}; //override this
 
 	friend class ECS;
 };

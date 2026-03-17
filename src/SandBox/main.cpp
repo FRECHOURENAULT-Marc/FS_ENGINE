@@ -21,8 +21,9 @@ float i = 0.0f;
 float j = 0.0f;
 float k = 0.0f;
 
-int m_otherEntityID = -1;
+int m_cameraEntityID2 = -1;
 int m_cameraEntityID = -1;
+int m_cameraEntityID3 = -1;
 int m_secondEntityID = -1;
 FS_Sprite* m_sprite = nullptr;
 
@@ -35,6 +36,19 @@ enum ChildStates
 	REVERSING,
 	COUNT
 };
+
+void TransparencePSOTest()
+{
+	for (int i = 5; i >= 0; i--)
+	{
+		int e1 = m_ecs->CreateEntity();
+		m_ecs->AddComponent<TransformComponent>(e1)->SetWorldPosition({ 0, 0, (float) -i});
+		MeshComponent* mesh1 = m_ecs->AddComponent<MeshComponent>(e1);
+		mesh1->SetGeometry(GeometryManager::GetGeometry(GEO_TYPE::BOX));
+		mesh1->SetMaterial("treeMat");
+	}
+
+}
 
 virtual void OnStart()
 {
@@ -70,20 +84,20 @@ virtual void OnStart()
 	fsCollider->SetRadius(1.0f);
 
 	//Light
-	int entityLight = ecs.CreateEntity();
+	/*int entityLight = ecs.CreateEntity();
 	TransformComponent* trsLight = ecs.AddComponent<TransformComponent>(entityLight);
 	LightComponent* light = ecs.AddComponent<LightComponent>(entityLight);
 	PointLight* pLight = new PointLight();
 	pLight->Strength = { 1, 1, 1 };
 	light->SetPointLight(pLight);
-	//ecs.GetEntity(m_entityID)->AddChild(entityLight);
-	trsLight->SetLocalPosition({ 0, 0, -2 });
+	trsLight->SetLocalPosition({ 0, 0, -2 });*/
 
 	//Emitter (particules)
 	EmitterSettings emitterSettings;
 	emitterSettings.partStartColor = { 1, 0, 0, 1 };
-	emitterSettings.emitterShape = EMITER_SHAPE::SPHERE;
-	emitterSettings.emitterMaxPart = 100;
+	emitterSettings.emitterShape = EMITER_SHAPE::CONE;
+	emitterSettings.partDir = { 0, 0, -1 };
+	emitterSettings.emitterMaxPart = 1;
 	emitterSettings.emitterDensity = 20;	//moins que emitterMaxPart si on veut qq chose de continue
 	emitterSettings.partGeotype = GEO_TYPE::BOX;
 	emitterSettings.partMaterialName = MATERIAL_DEFAULT_COLOR_NAME;
@@ -93,13 +107,19 @@ virtual void OnStart()
 	TransformComponent* camArm = ecs.AddComponent<TransformComponent>(m_cameraEntityID);
 	CameraComponent* CamComp = ecs.AddComponent<CameraComponent>(m_cameraEntityID);
 	CamComp->SetMainCamera(true);
-	//ecs.GetEntity(m_entityID)->AddChild(m_cameraEntityID);
 	camArm->SetLocalPosition({ 0, 0, -10 }); //Offset
 
-	m_otherEntityID = ecs.CreateEntity();
-	TransformComponent* camArm2 = ecs.AddComponent<TransformComponent>(m_otherEntityID);
-	CameraComponent* CamComp2 = ecs.AddComponent<CameraComponent>(m_otherEntityID);
+	m_cameraEntityID2 = ecs.CreateEntity();
+	TransformComponent* camArm2 = ecs.AddComponent<TransformComponent>(m_cameraEntityID2);
+	CameraComponent* CamComp2 = ecs.AddComponent<CameraComponent>(m_cameraEntityID2);
 	camArm2->SetLocalPosition({ 0, 0, -30 });
+
+	m_cameraEntityID3 = ecs.CreateEntity();
+	TransformComponent* camArm3 = ecs.AddComponent<TransformComponent>(m_cameraEntityID3);
+	CameraComponent* CamComp3 = ecs.AddComponent<CameraComponent>(m_cameraEntityID3);
+	//CamComp2->SetMainCamera(true);
+	camArm3->SetLocalPosition({ 0, -10, 0 }); //Offset
+	camArm3->SetRotation(0, -1.5708f, 0); //Rotation pour voir la scene de dessus
 
 	//State machine
 	StateMachineComponent* compSM = ecs.AddComponent<StateMachineComponent>(m_entityID);
@@ -163,6 +183,9 @@ virtual void OnStart()
 	FS_Sprite* treeSpr = ecs.AddSprite("treeTex");
 	treeSpr->SetPosition(600, 450);
 	treeSpr->SetScaling(0.25f);
+
+
+	TransparencePSOTest();
 };
 
 float m_angleYaw = 0.0f;
@@ -170,15 +193,18 @@ virtual void OnUpdate()
 {
 	//Test
 
-	
-
 	ECS& ecs = ECS::Get();
 
-	if (FS_InputsManager::Get()->GetKeyDown(Keyboard::A))
+	if (FS_InputsManager::Get()->GetKeyDown(Keyboard::NUMPAD2))
 	{
-		ecs.GetComponent<CameraComponent>(m_otherEntityID)->SetMainCamera(true);
+		CameraComponent* cam = ecs.GetComponent<CameraComponent>(m_cameraEntityID3);
+		cam->SetMainCamera(true);
 	}
-	if (FS_InputsManager::Get()->GetKeyDown(Keyboard::Z))
+	if (FS_InputsManager::Get()->GetKeyDown(Keyboard::NUMPAD1))
+	{
+		ecs.GetComponent<CameraComponent>(m_cameraEntityID2)->SetMainCamera(true);
+	}
+	if (FS_InputsManager::Get()->GetKeyDown(Keyboard::NUMPAD0))
 	{
 		ecs.GetComponent<CameraComponent>(m_cameraEntityID)->SetMainCamera(true);
 	}

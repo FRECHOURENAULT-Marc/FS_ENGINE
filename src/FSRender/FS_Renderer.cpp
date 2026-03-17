@@ -53,6 +53,7 @@ void FS_Renderer::UpdateRender(float dt)
 		if (dt == 0.0f)
 			return;
 		UpdateObjects();
+		AfterUpdateObjects();
 		Draw();
 	}
 	if (msg.message != WM_QUIT)
@@ -74,6 +75,7 @@ void FS_Renderer::UpdateObjects()
 {
 	UpdateCameras();
 	Update3DObjects();
+	Update3DAlphaObjects();
 	UpdateSprites();
 	// Update main pass constants (lights, ambient, eye pos) before drawing
 	UpdateMainPassCB();
@@ -81,7 +83,12 @@ void FS_Renderer::UpdateObjects()
 
 void FS_Renderer::UpdateCameras()
 {
-	FS_Device::Get()->m_FSCamera->Update();
+	FS_3DCamera* cam = FS_Device::Get()->m_FSCamera;
+	cam->Update();
+	if (cam->IsUpdatedThisFrame() == false)
+		return;
+
+	std::cout << "Camera updated this frame" << std::endl;
 	//Camera3D
 	XMFLOAT4X4 cameraViewProj = FS_Device::Get()->Camera()->GetViewProj();
 	XMMATRIX cameraMatrix = XMLoadFloat4x4(&cameraViewProj);
@@ -220,34 +227,73 @@ void FS_Renderer::AddObject(FS_3DObject* object)
 	CreateCBObject();
 	m_3DObjects.push_back(object);
 }
+void FS_Renderer::MoveToAlphaRender(FS_3DObject* object)
+{
+	for (int i = 0; i < m_3DObjects.size(); i++)
+	{
+		if (m_3DObjects[i] != object)
+			continue;
+		m_3DAlphaObjects.push_back(object);
+		m_CBAlphas.push_back(m_CBs[i]);
+		m_MBAlphas.push_back(m_MBs[i]);
+		m_3DObjects.erase(m_3DObjects.begin() + i);
+		m_MBs.erase(m_MBs.begin() + i);
+		m_CBs.erase(m_CBs.begin() + i);
+		return;
+	}
+	std::cout << "FS_Renderer::MoveToAlphaRender : Object not found." << std::endl;
+}
+void FS_Renderer::MoveToRender(FS_3DObject* object)
+{
+	for (int i = 0; i < m_3DAlphaObjects.size(); i++)
+	{
+		if (m_3DAlphaObjects[i] != object)
+			continue;
+		m_3DObjects.push_back(object);
+		m_CBs.push_back(m_CBAlphas[i]);
+		m_MBs.push_back(m_MBAlphas[i]);
+		m_3DAlphaObjects.erase(m_3DAlphaObjects.begin() + i);
+		m_MBAlphas.erase(m_MBAlphas.begin() + i);
+		m_CBAlphas.erase(m_CBAlphas.begin() + i);
+		return;
+	}
+	std::cout << "FS_Renderer::MoveToAlpha : Object not found." << std::endl;
+}
 bool FS_Renderer::RemoveObject(FS_3DObject* object)
 {
 	for (int i = 0; i < m_3DObjects.size(); i++)
 	{
 		if (m_3DObjects[i] != object)
 			continue;
-		RemoveObject(i);
+		RemoveObject(i, m_3DObjects, m_CBs, m_MBs);
+		return true;
+	}
+	for (int i = 0; i < m_3DAlphaObjects.size(); i++)
+	{
+		if (m_3DAlphaObjects[i] != object)
+			continue;
+		RemoveObject(i, m_3DAlphaObjects, m_CBAlphas, m_MBAlphas);
 		return true;
 	}
 	std::cout << "FS_Renderer::RemoveObject : Object not found." << std::endl;
 	return false;
 }
-void FS_Renderer::RemoveObject(int index)
+void FS_Renderer::RemoveObject(int index, std::vector<FS_3DObject*>& vec, std::vector<UploadBuffer<ObjectConstants>*>& CB, std::vector<UploadBuffer<MaterialConstants>*>& MB)
 {
-	auto itObject = m_3DObjects.begin();
-	auto itCB = m_CBs.begin();
-	auto itMB = m_MBs.begin();
+	auto itObject = vec.begin();
+	auto itCB = CB.begin();
+	auto itMB = MB.begin();
 	itObject += index;
 	itCB += index;
 	itMB += index;
 
-	delete(m_3DObjects[index]);
-	delete(m_CBs[index]);
-	delete(m_MBs[index]);
+	delete(vec[index]);
+	delete(CB[index]);
+	delete(MB[index]);
 
-	m_3DObjects.erase(itObject);
-	m_CBs.erase(itCB);
-	m_MBs.erase(itMB);
+	vec.erase(itObject);
+	CB.erase(itCB);
+	MB.erase(itMB);
 }
 
 FS_Sprite* FS_Renderer::AddSprite(std::string texName, bool isMat)
@@ -416,6 +462,44 @@ void FS_Renderer::Draw3DObjects()
 	}
 }
 
+void FS_Renderer::Draw3DAlphaObjects()
+{
+	FS_Device* device = FS_Device::Get();
+	MaterialManager* fsMat = device->m_FSMaterial;
+	FS_Command* cmd = device->m_FSCmd;
+
+	for (int i = 0; i < m_3DAlphaObjects.size(); ++i)
+	{
+		FS_3DObject* object = m_3DAlphaObjects[i];
+		if (object->IsActive() == false)
+			continue;
+		MeshGeometry* meshGeo = object->GetMesh();
+
+		auto vbv = meshGeo->VertexBufferView();
+		auto ibv = meshGeo->IndexBufferView();
+
+		FS_Material* mat = fsMat->m_MaterialLibrary[object->GetMaterialIndex()];
+		FS_ShaderPSO* shader = mat->Shader;
+		cmd->mCommandList->SetPipelineState(shader->mPSO.Get());
+
+		// b0 - Object
+		cmd->mCommandList->SetGraphicsRootConstantBufferView(0, m_CBAlphas[i]->Resource()->GetGPUVirtualAddress());
+		// b2 - Material → slot 3
+		cmd->mCommandList->SetGraphicsRootConstantBufferView(3, m_MBAlphas[i]->Resource()->GetGPUVirtualAddress());
+		// t0 - Texture → slot 2
+
+		CD3DX12_GPU_DESCRIPTOR_HANDLE texHandle(m_SrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+		texHandle.Offset(mat->TextureIndex, m_CbvSrvDescriptorSize);
+		cmd->mCommandList->SetGraphicsRootDescriptorTable(2, texHandle);
+
+		cmd->mCommandList->IASetVertexBuffers(0, 1, &vbv);
+		cmd->mCommandList->IASetIndexBuffer(&ibv);
+		cmd->mCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		cmd->mCommandList->DrawIndexedInstanced(meshGeo->IndexCount, 1, 0, 0, 0);
+	}
+}
+
 void FS_Renderer::DrawSprites()
 {
 	if (m_spriteRenderEnabled == false)
@@ -465,19 +549,23 @@ void FS_Renderer::Update3DObjects()
 		FS_3DObject* object = m_3DObjects[i];
 		if (object->IsActive() == false)
 			continue;
+		if (object->IsDirty() == false)
+			continue;
+		object->SetDirty(false);
 
 		auto& cb = m_CBs[i];
 		auto& mb = m_MBs[i];
 
 		//<Update par objet----
-		XMMATRIX worldObject = XMLoadFloat4x4(&object->GetWorld());
+		auto world = object->GetWorld();
+		XMMATRIX worldObject = XMLoadFloat4x4(&world);
 
 		ObjectConstants objConstants;
 		XMStoreFloat4x4(&objConstants.m_World, XMMatrixTranspose(worldObject));
 		cb->CopyData(0, objConstants);
 
 		MaterialConstants matConstants;
-		matConstants.m_Color = object->mColor;
+		matConstants.m_Color = object->GetColor();
 		// Fill material data from material manager so HLSL cbPerMaterial fields match
 		MaterialManager* matMgr = FS_Device::Get()->m_FSMaterial;
 		auto matIndex = object->GetMaterialIndex();
@@ -492,6 +580,74 @@ void FS_Renderer::Update3DObjects()
 
 		//----Update par objet>
 	}
+}
+void FS_Renderer::Update3DAlphaObjects()
+{
+	FS_3DCamera* cam = FS_Device::Get()->Camera();
+	XMFLOAT3 camPos = cam->GetPosition();
+	XMVECTOR cameraPosition = XMLoadFloat3(&camPos);
+	XMFLOAT3 camForward = cam->GetTransform().forward;
+	XMVECTOR cameraForward = XMLoadFloat3(&camForward);
+
+	bool isAllObjectsStatic = true;
+
+	for (int i = 0; i < m_3DAlphaObjects.size(); i++)
+	{
+		FS_3DObject* object = m_3DAlphaObjects[i];
+		if (object->IsActive() == false)
+			continue;
+			
+		//Si l'objet est immobile et la camera aussi, 
+		//pas besoin de recalculer la distance à la caméra ni de mettre à jour les constants buffers
+		if (object->IsDirty() == false && cam->IsUpdatedThisFrame() == false)
+			continue;
+		object->SetDirty(false);
+
+		isAllObjectsStatic = false;
+		auto& cb = m_CBAlphas[i];
+		auto& mb = m_MBAlphas[i];
+
+		//<Update par objet----
+		auto world = object->GetWorld();
+		XMMATRIX worldObject = XMLoadFloat4x4(&world);
+
+		ObjectConstants objConstants;
+		XMStoreFloat4x4(&objConstants.m_World, XMMatrixTranspose(worldObject));
+		cb->CopyData(0, objConstants);
+
+		MaterialConstants matConstants;
+		matConstants.m_Color = object->GetColor();
+		// Fill material data from material manager so HLSL cbPerMaterial fields match
+		MaterialManager* matMgr = FS_Device::Get()->m_FSMaterial;
+		auto matIndex = object->GetMaterialIndex();
+		if (matIndex >= 0 && matIndex < (int)matMgr->m_MaterialLibrary.size())
+		{
+			FS_Material* mat = matMgr->m_MaterialLibrary[matIndex];
+			matConstants.DiffuseAlbedo = mat->DiffuseAlbedo;
+			matConstants.Metallic = mat->Metallic;
+			matConstants.Roughness = mat->Roughness;
+		}
+		mb->CopyData(0, matConstants);
+
+		XMFLOAT3 pos = { world.m[3][0], world.m[3][1], world.m[3][2] };
+		XMVECTOR objPos = XMLoadFloat3(&pos);
+		float depth = XMVectorGetX(XMVector3Dot(objPos - cameraPosition, cameraForward));
+		object->SetDistanceToCamera(depth);
+		//----Update par objet>
+	}
+
+	if(isAllObjectsStatic && cam->IsUpdatedThisFrame() == false)
+		return;
+
+	std::cout << "Objects are dirty or camera updated, refreshing data." << std::endl;
+
+	std::cout << "Camera position: (" << camPos.x << ", " << camPos.y << ", " << camPos.z << ")" << std::endl;
+
+	//Trier les objets par distance à la caméra (depth)
+	std::sort(m_3DAlphaObjects.begin(), m_3DAlphaObjects.end(),
+		[](FS_3DObject* a, FS_3DObject* b) {
+			return a->GetDistanceToCamera() > b->GetDistanceToCamera(); // du plus loin au plus proche
+		});
 }
 void FS_Renderer::UpdateSprites()
 {
@@ -567,6 +723,17 @@ void FS_Renderer::UpdateMainPassCB()
 	m_PassCB->CopyData(0, mMainPassCB);
 }
 
+void FS_Renderer::AfterUpdateObjects()
+{
+	AfterUpdateCameras();
+}
+
+void FS_Renderer::AfterUpdateCameras()
+{
+	FS_3DCamera* cam = FS_Device::Get()->m_FSCamera;
+	cam->AfterUpdate();
+}
+
 void FS_Renderer::Draw()
 {
 	FS_Device* device = FS_Device::Get();
@@ -631,6 +798,7 @@ void FS_Renderer::Draw()
 	// =========================
 
 	Draw3DObjects();
+	Draw3DAlphaObjects();
 
 	DrawSprites();
 

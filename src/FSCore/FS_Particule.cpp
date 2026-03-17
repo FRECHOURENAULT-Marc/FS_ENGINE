@@ -17,9 +17,11 @@ void FS_Particule::UpdateGravityForce(float dt)
 
 void FS_Particule::UpdateWorld(float dt)
 {
-	mWorld._41 += (m_dir.x + m_gravity.x) * m_speed * dt;
-	mWorld._42 += (m_dir.y + m_gravity.y) * m_speed * dt;
-	mWorld._43 += (m_dir.z + m_gravity.z) * m_speed * dt;
+	auto world = GetWorld();
+	world._41 += (m_dir.x + m_gravity.x) * m_speed * dt;
+	world._42 += (m_dir.y + m_gravity.y) * m_speed * dt;
+	world._43 += (m_dir.z + m_gravity.z) * m_speed * dt;
+	SetWorld(world);
 }
 
 void FS_Particule::UpdateColor(float dt)

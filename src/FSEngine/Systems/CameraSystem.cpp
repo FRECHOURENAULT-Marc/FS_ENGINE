@@ -12,7 +12,8 @@ void CameraSystem::Update(float dt)
 
 		if (camera.IsActive() == false || trs.IsActive() == false)
 			continue;
-
-		camera.Update(trs);
+		if (trs.IsUpdatedThisFrame() == false)
+			continue;
+		camera.Update(trs.GetWorldMatrix());
 	}
 }

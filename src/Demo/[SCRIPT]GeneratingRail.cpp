@@ -180,7 +180,7 @@ void GeneratingRail::OnUpdate()
             if (m_currentPointIndex >= m_curvePoints.size())
             {
                 m_currentPointIndex = m_curvePoints.size() - 1;
-				m_gm->StartReplay();
+				//m_gm->StartReplay();
             }
                 
         }

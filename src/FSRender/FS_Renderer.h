@@ -25,8 +25,10 @@ public:
 
 	// 3D Objects
     void AddObject(FS_3DObject* object);
+	void MoveToAlphaRender(FS_3DObject* object);
+	void MoveToRender(FS_3DObject* object);
     bool RemoveObject(FS_3DObject* object);
-    void RemoveObject(int index);
+    void RemoveObject(int index, std::vector<FS_3DObject*>& vec, std::vector<UploadBuffer<ObjectConstants>*>& CB, std::vector<UploadBuffer<MaterialConstants>*>& MB);
 
 	// UI
     FS_Sprite* AddSprite(std::string texName, bool isMat = false);
@@ -53,15 +55,21 @@ protected:
     std::unordered_map<std::string, FS_ShaderPSO*> m_ShaderMap;
 
     std::vector<FS_3DObject*> m_3DObjects;
+    std::vector<FS_3DObject*> m_3DAlphaObjects;
     std::vector<FS_Sprite*> m_Sprites;
 
     void UpdateObjects();
     void UpdateCameras();
     void Update3DObjects();
+    void Update3DAlphaObjects();
     void UpdateSprites();
     void UpdateMainPassCB();
 
+    void AfterUpdateObjects();
+    void AfterUpdateCameras();
+
 	void Draw3DObjects();
+    void Draw3DAlphaObjects();
 	void DrawSprites();
 
     // Lights
@@ -72,6 +80,8 @@ protected:
 
     std::vector<UploadBuffer<ObjectConstants>*> m_CBs;
     std::vector<UploadBuffer<MaterialConstants>*> m_MBs;
+    std::vector<UploadBuffer<ObjectConstants>*> m_CBAlphas;
+    std::vector<UploadBuffer<MaterialConstants>*> m_MBAlphas;
 
     std::vector<UploadBuffer<ObjectConstants2D>*> m_CB2Ds;
     std::vector<UploadBuffer<MaterialConstants>*> m_MB2Ds;

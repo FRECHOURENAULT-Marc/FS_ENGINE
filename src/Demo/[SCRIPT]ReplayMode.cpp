@@ -8,6 +8,8 @@ void ReplayMode::OnStart()
 
 void ReplayMode::OnUpdate()
 {
+	return; // Replay broken with new transform system
+
 	if(m_isRecording)
 		RecordFrame();
 

@@ -10,14 +10,13 @@ CameraComponent::CameraComponent() : Component()
 	//SetLens(0.25f * Maths::Pi, 1.0f, 1.0f, 1000.0f);
 }
 
-void CameraComponent::Update(TransformComponent& transform)
+void CameraComponent::Update(XMFLOAT4X4 worldMtraix)
 {
 	if (!m_IsMainCamera)
 		return;
 
 	FS_3DCamera* mainCamera = FS_Device::Get()->Camera();
-	mainCamera->SetWorld(transform.GetWorldMatrix());
-	mainCamera->UpdateMatrix();
+	mainCamera->SetWorld(worldMtraix);
 }
 
 void CameraComponent::RotateRad(float yaw, float pitch, float roll)
@@ -46,7 +45,10 @@ void CameraComponent::SetMainCamera(bool isMain)
 	if (!m_IsMainCamera)
 		return;
 
-	std::vector<CameraComponent>& cameras = ECS::Get().GetAllFromType<CameraComponent>();
+	ECS& ecs = ECS::Get();
+	Update(ecs.GetComponent<TransformComponent>(m_id)->GetWorldMatrix());
+
+	std::vector<CameraComponent>& cameras = ecs.GetAllFromType<CameraComponent>();
 
 	for (int i = 0; i < cameras.size(); i++)
 	{

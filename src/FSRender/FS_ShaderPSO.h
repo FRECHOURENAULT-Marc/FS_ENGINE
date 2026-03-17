@@ -19,5 +19,6 @@ public:
 	std::vector<D3D12_INPUT_ELEMENT_DESC> mInputLayout; // créé dans BuildShadersAndInputLayout() ### utilisé dans BuildPSO()
 
 	bool mIsUI = false;
+	bool m_isTransparent = false;
 	//----PSO>
 };

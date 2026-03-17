@@ -80,6 +80,7 @@ void ECS::CreateSystems()
 	m_systems.push_back(new CameraSystem());
 	m_systems.push_back(new ColliderSystem());
 	m_systems.push_back(new LightSystem());
+	m_systems.push_back(new TransformSystem());
 }
 
 void ECS::CreateManagers()
@@ -113,6 +114,9 @@ void ECS::UpdateSystems()
 {
 	for (System* sys : m_systems)
 		sys->Update(m_deltaTime);
+
+	for (System* sys : m_systems)
+		sys->AfterUpdate(m_deltaTime);
 }
 
 void ECS::UpdateScripts()

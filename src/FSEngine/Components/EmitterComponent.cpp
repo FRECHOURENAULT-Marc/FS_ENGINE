@@ -118,11 +118,11 @@ void EmitterComponent::CreateParticule()
 	}
 	//Size (with world matrix)
 	float size = m_partSettings.partSize * PARTICULE_SIZE_FACTOR;
-	XMMATRIX _world = XMLoadFloat4x4(&particule->GetWorld());
+	XMFLOAT4X4 world = particule->GetWorld();
+	XMMATRIX _world = XMLoadFloat4x4(&world);
 	_world.r[0] = _world.r[0] * size;
 	_world.r[1] = _world.r[1] * size;
 	_world.r[2] = _world.r[2] * size;
-	XMFLOAT4X4 world = Maths::Identity4x4();
 	XMStoreFloat4x4(&world, _world);
 	particule->SetWorld(world);
 }

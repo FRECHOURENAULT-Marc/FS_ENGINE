@@ -19,7 +19,7 @@ void GameManager::OnStart()
     m_railgen = ecs.CreateScript<GeneratingRail>();
 	m_railgen->SetPlayer(m_player);
 	m_railgen->SetGM(this);
-    m_replayScript = ecs.CreateScript<ReplayMode>();
+    //m_replayScript = ecs.CreateScript<ReplayMode>();
 
     int winWidth = FS_Device::Window()->Width();
     int winHeight = FS_Device::Window()->Height();

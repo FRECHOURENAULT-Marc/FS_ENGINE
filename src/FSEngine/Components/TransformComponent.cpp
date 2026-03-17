@@ -6,6 +6,7 @@ void TransformComponent::MarkDirty()
 		return;
 
 	m_dirty = true;
+	m_isUpdatedThisFrame = true;
 	UpdateChildrenDirty();
 }
 void TransformComponent::UpdateChildrenDirty()
