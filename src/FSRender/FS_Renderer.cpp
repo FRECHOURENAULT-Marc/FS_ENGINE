@@ -648,6 +648,14 @@ void FS_Renderer::Update3DAlphaObjects()
 		[](FS_3DObject* a, FS_3DObject* b) {
 			return a->GetDistanceToCamera() > b->GetDistanceToCamera(); // du plus loin au plus proche
 		});
+	//TODO Trier les CBs et MBs en même temps que les objets
+
+	for(int i = 0; i < m_3DAlphaObjects.size(); i++)
+	{
+		auto world = m_3DAlphaObjects[i]->GetWorld();
+		XMFLOAT3 pos = { world.m[3][0], world.m[3][1], world.m[3][2] };
+		std::cout << "Object " << i << " position: (" << pos.x << ", " << pos.y << ", " << pos.z << "), depth: " << m_3DAlphaObjects[i]->GetDistanceToCamera() << std::endl;
+	}
 }
 void FS_Renderer::UpdateSprites()
 {
