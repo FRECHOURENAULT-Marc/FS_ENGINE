@@ -148,16 +148,16 @@ virtual void OnStart()
 
 	//Camera front
 	m_cameraEntityID1 = ecs.CreateEntity();
-	TransformComponent* camArm1 = ecs.AddComponent<TransformComponent>(m_cameraEntityID1);
-	CameraComponent* CamComp1 = ecs.AddComponent<CameraComponent>(m_cameraEntityID1);
-	CamComp1->SetMainCamera(true);
-	camArm1->SetWorldPosition({ 0, 0, -10 });
+	TransformComponent* camTrs1 = ecs.AddComponent<TransformComponent>(m_cameraEntityID1);
+	CameraComponent* camComp1 = ecs.AddComponent<CameraComponent>(m_cameraEntityID1);
+	camComp1->SetMainCamera(true);
+	camTrs1->SetWorldPosition({ 0, 0, -10 });
 	//Camera top
 	m_cameraEntityID2 = ecs.CreateEntity();
-	TransformComponent* camArm2 = ecs.AddComponent<TransformComponent>(m_cameraEntityID2);
-	CameraComponent* CamComp2 = ecs.AddComponent<CameraComponent>(m_cameraEntityID2);
-	camArm2->SetWorldPosition({ 0, -10, 0 });
-	camArm2->SetRotation(0, -Maths::Pi/2.0f, Maths::Pi);
+	TransformComponent* camTrs2 = ecs.AddComponent<TransformComponent>(m_cameraEntityID2);
+	CameraComponent* camComp2 = ecs.AddComponent<CameraComponent>(m_cameraEntityID2);
+	camTrs2->SetWorldPosition({ 0, -10, 0 });
+	camTrs2->SetRotation(0, -Maths::Pi/2.0f, Maths::Pi);
 };
 
 virtual void OnUpdate() 
@@ -223,6 +223,174 @@ public:
 			SceneManager::Get()->GoOnScene(1);
 		if (InputsManager::GetKeyDown(Keyboard::NUMPAD_SUBTRACT))
 			SceneManager::Get()->GoOnScene(0);
+		if (InputsManager::GetKeyDown(Keyboard::NUMPAD3))
+			SceneManager::Get()->GoOnScene(2);
+	}
+};
+class SceneDemo : public Scene
+{
+	VelocityComponent* movingCubeVel = nullptr;
+
+	TransformComponent* camTrs = nullptr;
+	TransformComponent* cubeTrs = nullptr;
+	float m_OrbitAngle = 0.0f;
+	float m_OrbitSpeed = Maths::Pi / 8.0f; // radians / sec
+	float m_OrbitRadius = 4.0f;
+	float m_OrbitHeight = 2.0f;
+
+public:
+
+	virtual void OnInit() override
+	{
+		ECS& ecs = ECS::Get();
+
+		// Floor
+		int floor = ecs.CreateEntity();
+		TransformComponent* floorTrs = ecs.AddComponent<TransformComponent>(floor);
+		floorTrs->SetScale(50, 1, 50);
+		floorTrs->SetWorldPosition({ 0, -floorTrs->GetScale().y / 2.0f, 0 });
+		MeshComponent* floorMesh = ecs.AddComponent<MeshComponent>(floor);
+		floorMesh->SetGeometry(GeometryManager::GetGeometry(GEO_TYPE::BOX));
+		floorMesh->SetColor({0, 0, 0, 1});
+
+		// Cube
+		int cube = ecs.CreateEntity();
+		cubeTrs = ecs.AddComponent<TransformComponent>(cube);
+		cubeTrs->SetWorldPosition({ 0, cubeTrs->GetScale().y / 2.0f, 0 });
+		MeshComponent* cubeMesh = ecs.AddComponent<MeshComponent>(cube);
+		cubeMesh->SetGeometry(GeometryManager::GetGeometry(GEO_TYPE::BOX));
+		cubeMesh->SetColor({0.5f, 0.5f, 0.5f, 1.0f});
+
+		// Moving cube
+		int movingCube = ecs.CreateEntity();
+		TransformComponent* movingCubeTrs = ecs.AddComponent<TransformComponent>(movingCube);
+		movingCubeTrs->SetScale(0.25f);
+		movingCubeTrs->SetWorldPosition({ 0, movingCubeTrs->GetScale().y / 2.0f + 1.0f, 0 });
+		MeshComponent* movingCubeMesh = ecs.AddComponent<MeshComponent>(movingCube);
+		movingCubeMesh->SetGeometry(GeometryManager::GetGeometry(GEO_TYPE::BOX));
+		movingCubeMesh->SetColor({ 1, 1, 1, 0.5f });
+		movingCubeMesh->SetMaterial(MATERIAL_DEFAULT_COLOR_A_NAME);
+		movingCubeVel = ecs.AddComponent<VelocityComponent>(movingCube);
+		movingCubeVel->SetVelocity(1);
+
+		// Sphere
+		int sphere = ecs.CreateEntity();
+		TransformComponent* sphereTrs = ecs.AddComponent<TransformComponent>(sphere);
+		sphereTrs->SetScale(0.25f);
+		sphereTrs->SetWorldPosition({ 0, sphereTrs->GetScale().y / 2.0f, 1});
+		MeshComponent* sphereMesh = ecs.AddComponent<MeshComponent>(sphere);
+		sphereMesh->SetGeometry(GeometryManager::GetGeometry(GEO_TYPE::SPHERE));
+		sphereMesh->SetColor({1, 0, 0, 1});
+
+		// Custom Sphere
+		int customSphere = ecs.CreateEntity();
+		TransformComponent* customSphereTrs = ecs.AddComponent<TransformComponent>(customSphere);
+		customSphereTrs->SetScale(0.5f);
+		customSphereTrs->SetWorldPosition({ 1.0f, customSphereTrs->GetScale().y / 2.0f, 0.5f});
+		MeshComponent* customSphereMesh = ecs.AddComponent<MeshComponent>(customSphere);
+		// Create custom geometry
+		CommandList* cmdList = Device::GetCommand();
+		ThrowIfFailed(cmdList->m_CommandList->Reset(cmdList->m_DirectCmdListAlloc.Get(), nullptr));
+		MeshGeometry* customSphereGeometry = GeometryManager::BuildGeometry(GeometryGenerator::CreateSphere(0.5f, 64, 32));
+		cmdList->ExecuteCommands();
+		cmdList->FlushCommandQueue();
+		customSphereMesh->SetGeometry(customSphereGeometry);
+		customSphereMesh->SetColor({1, 0, 0, 1});
+
+		// Custom Cylinder
+		int customCylinder = ecs.CreateEntity();
+		TransformComponent* customCylinderTrs = ecs.AddComponent<TransformComponent>(customCylinder);
+		customCylinderTrs->SetScale(1.0f, 0.5f, 1.0f);
+		customCylinderTrs->SetWorldPosition({ -0.5f, customCylinderTrs->GetScale().y / 2.0f, -1.0f });
+		MeshComponent* customCylinderMesh = ecs.AddComponent<MeshComponent>(customCylinder);
+		// Create custom geometry
+		ThrowIfFailed(cmdList->m_CommandList->Reset(cmdList->m_DirectCmdListAlloc.Get(), nullptr));
+		MeshGeometry* customCylinderGeometry = GeometryManager::BuildGeometry(GeometryGenerator::CreateCylinder(0.2f, 0.3f, 1.0f, 64, 32));
+		cmdList->ExecuteCommands();
+		cmdList->FlushCommandQueue();
+		customCylinderMesh->SetGeometry(customCylinderGeometry);
+		customCylinderMesh->SetColor({ 0, 0, 1, 1 });
+		// Emitter (particules)
+		int emitter = ecs.CreateEntity();
+		TransformComponent* emitterTrs = ecs.AddComponent<TransformComponent>(emitter);
+		customCylinderTrs->AddChild(emitterTrs);
+		emitterTrs->SetLocalPosition({ 0.0f, 0.25f, 0.0f });
+		EmitterSettings emitterSettings;
+		emitterSettings.m_EmitterShape = EMITER_SHAPE::CONE;
+		emitterSettings.m_EmitterMaxPart = 500;
+		emitterSettings.m_EmitterDensity = 20;
+		emitterSettings.m_PartDir = { 0, 1, 0 };
+		emitterSettings.m_PartGravity = { 0, -1, 0 };
+		emitterSettings.m_PartGeoType = GEO_TYPE::SPHERE;
+		emitterSettings.m_PartStartColor = { 0, 1, 0, 1 };
+		emitterSettings.m_PartMaterialName = MATERIAL_DEFAULT_COLOR_NAME;
+		ecs.AddComponent<EmitterComponent>(emitter)->SetSettings(emitterSettings);
+
+		// Light
+		int light = ecs.CreateEntity();
+		TransformComponent* lightTrs = ecs.AddComponent<TransformComponent>(light);
+		LightComponent* lightComp = ecs.AddComponent<LightComponent>(light);
+		PointLight* lightP = new PointLight();
+		lightP->m_Strength = { 1, 1, 1 };
+		lightComp->SetPointLight(lightP);
+		lightTrs->SetWorldPosition({ 0, 2, 0 });
+
+		// Camera top
+		int camera = ecs.CreateEntity();
+		camTrs = ecs.AddComponent<TransformComponent>(camera);
+		camTrs->SetWorldPosition({ 0, 4, -3 });
+		camTrs->SetRotation(0, Maths::Pi / 4.0f, 0);
+		CameraComponent* camComp = ecs.AddComponent<CameraComponent>(camera);
+		camComp->SetMainCamera(true);
+
+		// First orbit parameters
+		{
+			XMFLOAT3 center = cubeTrs->GetWorldPosition();
+			XMFLOAT3 camPos = camTrs->GetWorldPosition();
+			float dx = camPos.x - center.x;
+			float dz = camPos.z - center.z;
+			m_OrbitRadius = std::sqrt(dx*dx + dz*dz);
+			m_OrbitHeight = camPos.y - center.y;
+			m_OrbitAngle = std::atan2(dx, dz);
+		}
+	}
+
+	float m_time = 0.0f;
+	virtual void OnUpdate() override
+	{
+		if (InputsManager::GetKeyDown(Keyboard::NUMPAD_ADD))
+			SceneManager::Get()->GoOnScene(1);
+		if (InputsManager::GetKeyDown(Keyboard::NUMPAD_SUBTRACT))
+			SceneManager::Get()->GoOnScene(0);
+
+		float dt = ECS::GetDeltaTime();
+
+		/// Move the cube
+		m_time += dt;
+		movingCubeVel->SetVelocity(cos(m_time));
+
+		/// Orbit Update
+		m_OrbitAngle += m_OrbitSpeed * dt;
+		XMFLOAT3 center = cubeTrs->GetWorldPosition();
+
+		// Camera position update
+		float x = center.x + std::sin(m_OrbitAngle) * m_OrbitRadius;
+		float z = center.z + std::cos(m_OrbitAngle) * m_OrbitRadius;
+		float y = center.y + m_OrbitHeight;
+		camTrs->SetWorldPosition({ x, y, z });
+
+		// Rotation update to look at the center
+		// Look to center
+		XMFLOAT3 camPos = camTrs->GetWorldPosition();
+		float dirX = center.x - camPos.x;
+		float dirY = center.y - camPos.y;
+		float dirZ = center.z - camPos.z;
+
+		float horizDist = std::sqrt(dirX * dirX + dirZ * dirZ);
+		float yaw = std::atan2(dirX, dirZ);
+		float pitch = std::atan2(-dirY, horizDist);
+
+		camTrs->SetRotation(yaw, pitch, 0.0f);
 	}
 };
 
@@ -239,8 +407,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
 
 	SceneManager::Get()->CreateScene<SceneSandbox>();
 	SceneManager::Get()->CreateScene<SceneSandbox>();
+	SceneManager::Get()->CreateScene<SceneDemo>();
 
 	ECSSettings settings = ECSSettings();
+	settings.m_WinHeight = 1080;
+	settings.m_WinWidth = 1920;
 	//settings.m_ShowFPSInWindowName = false;
 
 	ecs.Run(hInstance, settings);

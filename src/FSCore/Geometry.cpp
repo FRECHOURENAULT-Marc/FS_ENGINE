@@ -401,7 +401,7 @@ namespace FSC
 		}
 
 		CreateCylinderCap(bottomRadius, height, sliceCount, vertices, indices, false);
-		CreateCylinderCap(bottomRadius, height, sliceCount, vertices, indices, true);
+		CreateCylinderCap(topRadius, height, sliceCount, vertices, indices, true);
 
 		GeometryData* geoData = new GeometryData();
 		geoData->m_Vertices = vertices;
