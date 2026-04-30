@@ -1,31 +1,37 @@
 #pragma once
 
-enum class LIGHT_TYPE
+namespace FSE
 {
-	NONE,
-	POINT,
-	SPOT,
-	DIRECTIONAL
-};
 
-class LightComponent : public Component
-{
-	virtual void Reset() override;
+	enum class LIGHT_TYPE
+	{
+		NONE,
+		POINT,
+		SPOT,
+		DIRECTIONAL
+	};
 
-	Light* m_light = nullptr;
-	LIGHT_TYPE m_type = LIGHT_TYPE::NONE;
+	class LightComponent : public Component
+	{
+		virtual void Reset() override;
 
-	bool IsLightSet();
+		Light* m_Light = nullptr;
+		LIGHT_TYPE m_Type = LIGHT_TYPE::NONE;
 
-public:
-	LightComponent();
+		bool IsLightSet();
 
-	void SetPointLight(PointLight* light);
-	void SetSpotLight(SpotLight* light);
-	void SetDirectionalLight(DirectionalLight* light);
+	public:
+		LightComponent();
 
-	friend class ECS;
-	friend class LightSystem;
-};
+		void SetPointLight(PointLight* light);
+		void SetSpotLight(SpotLight* light);
+		void SetDirectionalLight(DirectionalLight* light);
+
+		friend class ECS;
+		friend class LightSystem;
+	};
+
+}
+
 
 

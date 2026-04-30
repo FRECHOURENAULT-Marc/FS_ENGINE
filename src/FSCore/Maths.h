@@ -1,22 +1,26 @@
 #pragma once
 
-class Maths
+namespace FSC
 {
-public:
 
-    static DirectX::XMFLOAT4X4 Identity4x4()
+    class Maths
     {
-        static DirectX::XMFLOAT4X4 I(
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f);
+    public:
 
-        return I;
-    }
+        static DirectX::XMFLOAT4X4 Identity4x4()
+        {
+            static DirectX::XMFLOAT4X4 I(
+                1.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 1.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 1.0f, 0.0f,
+                0.0f, 0.0f, 0.0f, 1.0f);
 
-	static const float Infinity;
-	static const float Pi;
+            return I;
+        }
 
-};
+        static inline constexpr float Infinity = FLT_MAX;
+        static inline constexpr float Pi = 3.1415926535f;
 
+    };
+
+}

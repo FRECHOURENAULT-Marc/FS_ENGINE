@@ -80,10 +80,10 @@ std::wstring DxException::ToString()const
 
 MeshGeometry::~MeshGeometry()
 {
-    VertexBufferCPU.Reset();
-    IndexBufferCPU.Reset();
-    VertexBufferGPU.Reset();
-    IndexBufferGPU.Reset();
-    VertexBufferUploader.Reset();
-    IndexBufferUploader.Reset();
+    m_VertexBufferCPU.Reset();
+    m_IndexBufferCPU.Reset();
+    m_VertexBufferGPU.Reset();
+    m_IndexBufferGPU.Reset();
+    m_VertexBufferUploader.Reset();
+    m_IndexBufferUploader.Reset();
 }

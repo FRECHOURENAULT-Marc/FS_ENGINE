@@ -1,15 +1,21 @@
 #include "pch.h"
 
-template<typename C>
-inline C* ColliderComponent::SetType()
+namespace FSE
 {
-	EnsureTransform();
+	template<typename C>
+	inline C* ColliderComponent::SetType()
+	{
+		if (m_Collider != nullptr)
+			delete(m_Collider);
 
-	if (mCollider != nullptr)
-		delete(mCollider);
+		C* collider = new C();
+		m_Collider = collider;
 
-	C* collider = new C();
-	mCollider = collider;
-	return collider;
+		AddToDefaultLayer();
+
+		return collider;
+	}
 }
+
+
 

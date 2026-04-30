@@ -27,6 +27,7 @@
 #include <string>
 #include <memory>
 #include <algorithm>
+#include <functional>
 #include <vector>
 #include <array>
 #include <unordered_map>
@@ -42,27 +43,35 @@ using namespace std;
 using namespace DirectX;
 
 //Forward declarations
-struct MeshGeometry;
-
-template<typename T>
-class Condition;
+namespace FSC
+{
+	struct MeshGeometry;
+	template<typename T>
+	class Condition;
+}
 
 //Fichiers Core
+#include "utils.h"
 #include "Transition.h"
 #include "Condition.h"
 #include "Action.h"
-#include "FS_StateMachine.h"
+#include "StateMachine.h"
 #include "InputsStruct.h"
-#include "FS_InputsManager.h"
+#include "InputsManager.h"
 #include "Vertex.h"
 #include "Maths.h"
-#include "FS_Clock.h"
+#include "Clock.h"
 #include "Geometry.h"
-#include "FS_Collider.h"
-#include "FS_Light.h"
+#include "Collider.h"
+#include "Light.h"
 #include "ConstantBuffer.h"
 
 #include "transform.h"
-#include "FS_3DObject.h"
-#include "FS_Sprite.h"
-#include "FS_Particule.h"
+#include "RenderObject.h"
+#include "Object3D.h"
+#include "Object2D.h"
+#include "Particule.h"
+
+#include "Thread.h"
+
+using namespace FSC;

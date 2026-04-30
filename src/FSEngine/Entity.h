@@ -1,15 +1,20 @@
 #pragma once
 
-class Entity : public Object
+namespace FSE
 {
-	void Reset() override {};
+	class Entity : public Object
+	{
+		void Reset() override {};
 
-public:
-	Entity();
+	public:
+		Entity();
 
-	void AddChild(int id);
-	void RemoveChild(int id);
+		void AddChild(int id);
+		void RemoveChild(int id);
 
-	friend class ECS;
-};
+		friend class ECS;
+	};
+}
+
+
 

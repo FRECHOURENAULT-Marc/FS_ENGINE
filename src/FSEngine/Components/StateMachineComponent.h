@@ -1,23 +1,30 @@
 #pragma once
 
-class StateMachineComponent : public Component
+namespace FSE
 {
-	virtual void Reset() override;
 
-	FS_StateMachine<Entity> m_StateMachine;
+	class StateMachineComponent : public Component
+	{
+		virtual void Reset() override;
 
-public:
-	StateMachineComponent();
+		StateMachine<Entity> m_StateMachine;
 
-	void Update() { m_StateMachine.Update(); }
-	void SetState(int state);
-	void InitializeStateMachine(int stateCount);
+	public:
+		StateMachineComponent();
 
-	template<typename U>
-	U* CreateAction(int state);
+		void Update() { m_StateMachine.Update(); }
+		void SetState(int state);
+		void InitializeStateMachine(int stateCount);
 
-	friend class ECS;
-};
+		template<typename U>
+		U* CreateAction(int state);
+
+		friend class ECS;
+	};
+
+}
+
+
 
 #include "StateMachineComponent.inl"
 

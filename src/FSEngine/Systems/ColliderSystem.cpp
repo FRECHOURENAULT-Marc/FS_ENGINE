@@ -1,38 +1,48 @@
 #include "pch.h"
 
-void ColliderSystem::Update(float dt)
+namespace FSE
 {
-	auto& allColliders = m_ecs->GetAllFromType<ColliderComponent>();
+	void ColliderSystem::Update(float dt)
+	{
+		auto allLayers = m_Ecs->GetLayersMap();
 
-	std::vector<ColliderComponent*> activeCollider;
-	//remove inactive component
-	for (int i = 0; i < allColliders.size(); i++)
-	{
-		auto& collider = allColliders[i];
-		if (collider.IsActive() == false)
-			continue;
-		activeCollider.push_back(&collider);
-	}
-	for (auto collider : activeCollider)
-	{
-		collider->Update();
-		collider->ResetColliding();
-	}
-	//last to first : previous element (if deleted) does'nt affect the next verification
-	int vectorLastIndex = activeCollider.size() - 1;
-	for(int i = vectorLastIndex; i >= 0; i--)
-	{
-		auto collider = activeCollider[i];
-		for (auto other : activeCollider)
+		auto allColliders = ECS::Get().GetAllFromType<ColliderComponent>();
+		for(int i = 0; i < MAX_COMPONENTS; i++)
 		{
-			if (collider == other)
-				continue;
-			if (collider->IsColliding(other) == false)
+			ColliderComponent* collider = allColliders + i; //C array
+			if (collider->IsActive() == false)
 				continue;
 
-			collider->AddColliding(other);
-			other->AddColliding(collider);
+			collider->Update();
+			collider->ResetColliding();
 		}
-		activeCollider.erase(activeCollider.begin() + i);
+
+		for (auto layer : allLayers)
+		{
+			std::vector<ColliderComponent*> colliders = layer.second;
+
+			int vectorLastIndex = colliders.size() - 1;
+			for (int i = vectorLastIndex; i >= 0; i--)
+			{
+				auto me = colliders[i];
+
+				for (auto other : colliders)
+				{
+					if (me->IsActive() == false)
+						continue;
+
+					if (me == other)
+						continue;
+
+					if (me->IsColliding(other) == false)
+						continue;
+
+					me->AddColliding(other);
+					other->AddColliding(me);
+				}
+
+				colliders.erase(colliders.begin() + i);
+			}
+		}
 	}
 }

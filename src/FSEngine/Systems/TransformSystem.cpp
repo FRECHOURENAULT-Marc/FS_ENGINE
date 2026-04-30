@@ -1,14 +1,19 @@
 #include "pch.h"
 
-void TransformSystem::Update(float dt)
+namespace FSE
 {
-	auto& transforms = m_ecs->GetAllFromType<TransformComponent>();
-
-	for (int i = 0; i < transforms.size(); i++)
+	void TransformSystem::AfterUpdate(float dt)
 	{
-		TransformComponent& trs = transforms[i];
-		if (trs.IsActive() == false)
-			continue;
-		trs.SetUpdatedThisFrame(false);
+		auto transforms = m_Ecs->GetAllFromType<TransformComponent>();
+
+		for (int i = 0; i < MAX_COMPONENTS; i++)
+		{
+			TransformComponent& trs = transforms[i];
+			if (trs.IsActive() == false)
+				continue;
+			trs.SetUpdatedThisFrame(false);
+		}
 	}
 }
+
+

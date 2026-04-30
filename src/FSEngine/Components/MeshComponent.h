@@ -1,21 +1,30 @@
 #pragma once
 
-class MeshComponent : public Component
+namespace FSE
 {
-	virtual void Reset() override;
 
-	FS_3DObject* m_3dObject = nullptr; 
+	class MeshComponent : public Component
+	{
+		virtual void Reset() override;
 
-	void MoveObjectToCorrectRenderVector(FS_Material* mat);
+		Object3D* m_Object3D = nullptr;
+		MeshGeometry* m_MeshData = nullptr;
 
-public: 
-	MeshComponent();
+		void MoveObjectToCorrectRenderVector(Material* mat);
 
-	FS_3DObject* Get3DObject() { return m_3dObject; }
-	bool SetGeometry(MeshGeometry* mesh);
-	bool SetMaterial(std::string name);
-	void SetColor(XMFLOAT4 color) { m_3dObject->SetColor(color); };
-	void SetWorld(XMFLOAT4X4 world) { m_3dObject->SetWorld(world); };
+	public:
+		MeshComponent();
 
-	friend class ECS;
-};
+		Object3D* Get3DObject() { return m_Object3D; }
+		MeshGeometry* GetMeshData() { return m_MeshData; }
+
+		bool SetGeometry(MeshGeometry* mesh);
+		bool SetMaterial(std::string name);
+		void SetColor(XMFLOAT4 color) { m_Object3D->SetColor(color); };
+		void SetWorld(XMFLOAT4X4 world) { m_Object3D->SetWorld(world); };
+
+		friend class ECS;
+	};
+
+}
+

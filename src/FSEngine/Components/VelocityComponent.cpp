@@ -1,6 +1,10 @@
 #include "pch.h"
 
-void VelocityComponent::Reset()
+namespace FSE
 {
-	m_velocity = 0.0f;
+	void VelocityComponent::Reset()
+	{
+		m_Velocity = 0.0f;
+	}
 }
+

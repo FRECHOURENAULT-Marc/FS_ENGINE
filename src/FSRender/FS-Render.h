@@ -15,11 +15,15 @@
 #include <assert.h>
 
 //Forward decl
-struct MeshGeometry;
-class FS_Window;
-class FS_3DCamera;
-class FS_Command;
-class FS_ShaderPSO;
+namespace FSR
+{
+	class Device;
+	class MaterialManager;
+	class Window;
+	class Camera3D;
+	class CommandList;
+	class ShaderPSO;
+}
 
 //Render Files
 #include "Common/d3dx12.h"
@@ -28,19 +32,20 @@ class FS_ShaderPSO;
 #include "Common/UploadBuffer.h"
 #include "GeometryManager.h"
 
-#include "FS_Command.h"
-#include "FS_SwapChain.h"
+#include "CommandList.h"
+#include "SwapChain.h"
 
-#include "FS_Texture.h"
-#include "FS_Material.h"
+#include "Texture.h"
+#include "Material.h"
 #include "SpriteGenerator.h"
-#include "FS_Text.h"
+#include "UIText.h"
 
-#include "FS_ShaderPSO.h"
-#include "FS_3DCamera.h"
-#include "FS_Window.h"
+#include "ShaderPSO.h"
+#include "3DCamera.h"
+#include "Window.h"
 
-#include "FS_Renderer.h"
+#include "RendererManager.h"
 
-#include "FS_Device.h"
+#include "Device.h"
 
+using namespace FSR;

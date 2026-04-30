@@ -1,55 +1,59 @@
 #pragma once
 
-struct Transform
+namespace FSC
 {
-	XMFLOAT3 pos;
 
-	XMFLOAT3 sca;
+	struct Transform
+	{
+		XMFLOAT3 m_Pos;
 
-	XMFLOAT3 forward;
-	XMFLOAT3 right;
-	XMFLOAT3 up;
-	XMFLOAT4 quat;
-	XMFLOAT4X4 rot;
+		XMFLOAT3 m_Scale;
 
-	float yaw;
-	float pitch;
-	float roll;
+		XMFLOAT3 m_Forward;
+		XMFLOAT3 m_Right;
+		XMFLOAT3 m_Up;
+		XMFLOAT4 m_Quat;
+		XMFLOAT4X4 m_Rot;
 
-private:
-	bool isWorldUpdated;
-	XMFLOAT4X4 world;
-	bool isInvWorldUpdated;
-	XMFLOAT4X4 invWorld;
+		float m_Yaw;
+		float m_Pitch;
+		float m_Roll;
 
-public:
-	Transform();
+	private:
+		bool m_IsWorldUpdated;
+		XMFLOAT4X4 m_World;
+		bool m_IsInvWorldUpdated;
+		XMFLOAT4X4 m_InvWorld;
 
-	XMFLOAT4X4 GetWorld();
-	XMFLOAT4X4 GetInvWorld();
-	XMFLOAT3 GetYPR();
-	void SetWorld(XMFLOAT4X4 _world);
+	public:
+		Transform();
 
-	void UpdateWorld();
-	void UpdateInvWorld();
+		XMFLOAT4X4 GetWorld();
+		XMFLOAT4X4 GetInvWorld();
+		XMFLOAT3 GetYPR();
+		void SetWorld(XMFLOAT4X4 _world);
 
-	bool IsUpdated() { return isWorldUpdated && isInvWorldUpdated; };
+		void UpdateWorld();
+		void UpdateInvWorld();
 
-	void Identity();
-	void SetScaling(float scale);
-	void SetScaling(float sx, float sy, float sz);
-	void Scale(float scale);
-	void Scale(float sx, float sy, float sz);
-	void SetPosition(float x, float y, float z);
-	void Move(float dist);
-	void ResetRotation();
-	void SetRotation(Transform& trs);
-	void SetRotationFromQuaternion();
-	void OrbitAroundAxis(XMFLOAT3& center, XMFLOAT3& axis, float radius, float angle);
-	void SetYPR(float yaw, float pitch, float roll);
-	void AddYPR(float yaw, float pitch, float roll);
-	void AddYaw(float yaw);
-	void AddPitch(float pitch);
-	void AddRoll(float roll);
-};
+		bool IsUpdated() { return m_IsWorldUpdated && m_IsInvWorldUpdated; };
 
+		void Identity();
+		//void SetScaling(float scale);
+		void SetScaling(float sx, float sy, float sz);
+		void Scale(float scale);
+		void Scale(float sx, float sy, float sz);
+		void SetPosition(float x, float y, float z);
+		void Move(float dist);
+		void ResetRotation();
+		void SetRotation(Transform& trs);
+		void SetRotationFromQuaternion();
+		void OrbitAroundAxis(XMFLOAT3& center, XMFLOAT3& axis, float radius, float angle);
+		void SetYPR(float yaw, float pitch, float roll);
+		void AddYPR(float yaw, float pitch, float roll);
+		void AddYaw(float yaw);
+		void AddPitch(float pitch);
+		void AddRoll(float roll);
+	};
+
+}

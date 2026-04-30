@@ -1,42 +1,53 @@
 #include "pch.h"
 
-SpriteGenerator::SpriteGenerator()
+namespace FSR
 {
-}
 
-SpriteGenerator* SpriteGenerator::Get()
-{
-	if (m_instance == nullptr)
-		m_instance = new SpriteGenerator();
+	SpriteGenerator::SpriteGenerator()
+	{
+	}
 
-	return m_instance;
-}
+	SpriteGenerator* SpriteGenerator::Get()
+	{
+		if (m_Instance == nullptr)
+			m_Instance = new SpriteGenerator();
 
-FS_Sprite* SpriteGenerator::CreateSprite(std::string name, bool isMat)
-{
-	FS_Device* device = FS_Device::Get();
-	FS_Renderer* renderer = FS_Device::Renderer();
-	FS_Sprite* sprite = new FS_Sprite();
-	auto matManager = device->m_FSMaterial;
-	auto texManager = device->m_FSTextures;
-	std::string matName = name + "Mat";
+		return m_Instance;
+	}
 
-	if (isMat)
-		matName = name;
-	if (isMat == false) // Create a material if texture is using only by this sprite
-		matManager->CreateMaterial(SHADER_SPRITE_NAME, matName, name);
+	Object2D* SpriteGenerator::CreateSprite(std::string textureName, bool isMat)
+	{
+		Device* device = Device::Get();
+		RendererManager* renderer = Device::GetRenderer();
+		Object2D* sprite = new Object2D();
+		auto materialManager = MaterialManager::Get();
+		auto textureManager = TextureManager::Get();
+		std::string materialName = textureName + "Mat";
 
-	sprite->mGeo = GeometryManager::Get()->GetGeometry(GEO_TYPE::PLANE);
-	sprite->mMaterialIndex = matManager->GetMaterialIndex(matName);
-	int texIndex = matManager->GetMaterial(sprite->mMaterialIndex)->TextureIndex;
-	sprite->mSize = texManager->GetTexture(texIndex)->size;
-	sprite->misActive = true;
-	sprite->winSize = { device->m_FSWindow->Width(), device->m_FSWindow->Height() };
-	sprite->SetScaling(1.0f);
-	sprite->SetPosition(0, 0);
-	sprite->m_transform.UpdateWorld();
-	sprite->m_transform.UpdateInvWorld();
+		if (isMat)
+			materialName = textureName;
+		if (isMat == false)
+		{
+			int textureIndex = TextureManager::GetTextureIndex(textureName);
+			if(materialManager->GetMaterialIndexFromTextureID(textureIndex) == -1)
+				materialManager->CreateMaterial(SHADER_SPRITE_NAME, materialName, textureName); // Create a material if texture doesnt have one
+			if(materialManager->GetMaterialIndex(materialName) == -1)
+				materialManager->CreateMaterial(SHADER_SPRITE_NAME, materialName, textureName); // Create a material if texture doesnt have one
+		} 
+			
 
-	renderer->m_Sprites.push_back(sprite);
-	return sprite;
+		sprite->SetGeo(GeometryManager::Get()->GetGeometry(GEO_TYPE::PLANEUI));
+		sprite->SetMaterialIndex(materialManager->GetMaterialIndex(materialName));
+		int textureIndex = materialManager->GetMaterial(sprite->GetMaterialIndex())->TextureIndex;
+		XMINT2 textureSize = textureManager->GetTexture(textureIndex)->m_Size;
+		sprite->SetSize(textureSize.x, textureSize.y);
+		sprite->SetActive(true);
+		sprite->SetWinSize(device->GetWindow()->Width(), device->GetWindow()->Height());
+		sprite->SetScaling(1.0f);
+		sprite->SetPosition(0, 0);
+
+		renderer->m_Sprites.push_back(sprite);
+		return sprite;
+	}
+
 }

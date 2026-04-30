@@ -1,11 +1,18 @@
 #pragma once
 
-class ColliderSystem : public System
+namespace FSE
 {
 
-public:
-	ColliderSystem() : System() {};
+	class ColliderSystem : public System
+	{
 
-	virtual void Update(float dt) override;
-};
+	public:
+		ColliderSystem() : System() {};
+
+		virtual void Update(float dt) override;
+	};
+
+}
+
+
 

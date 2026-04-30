@@ -1,6 +1,21 @@
 #include "pch.h"
 
-Script::Script()
+namespace FSE
 {
-	m_ecs = &ECS::Get();
+
+	Script::Script()
+	{
+		m_Ecs = &ECS::Get();
+	}
+
+	void Script::Update()
+	{
+		OnUpdate();
+	}
+	void Script::Start()
+	{
+		OnStart();
+		m_IsInit = true;
+	}
+
 }

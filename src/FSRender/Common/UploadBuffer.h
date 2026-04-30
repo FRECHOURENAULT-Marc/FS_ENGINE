@@ -15,11 +15,11 @@ public:
     void CopyData(int elementIndex, const T& data);
 
 private:
-    Microsoft::WRL::ComPtr<ID3D12Resource> mUploadBuffer;
-    BYTE* mMappedData = nullptr;
+    Microsoft::WRL::ComPtr<ID3D12Resource> m_UploadBuffer;
+    BYTE* m_MappedData = nullptr;
 
-    UINT mElementByteSize = 0;
-    bool mIsConstantBuffer = false;
+    UINT m_ElementByteSize = 0;
+    bool m_IsConstantBuffer = false;
 };
 
 #include "UploadBuffer.inl"

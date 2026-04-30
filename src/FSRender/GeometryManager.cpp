@@ -1,61 +1,69 @@
 #include "pch.h"
 
-MeshGeometry* GeometryManager::BuildGeometry(GeometryData* goeData)
+namespace FSR
 {
-	std::vector<Vertex> vertex = goeData->vertices;
-	UINT vByteCount = goeData->vertices.size() * sizeof(Vertex);
-	std::vector<uint16_t> indices = goeData->indices;
-	UINT iByteCount = goeData->indices.size() * sizeof(uint16_t);
 
-	MeshGeometry* pGeo = new MeshGeometry();
-	ThrowIfFailed(D3DCreateBlob(vByteCount, &pGeo->VertexBufferCPU));
-	CopyMemory(pGeo->VertexBufferCPU->GetBufferPointer(), vertex.data(), vByteCount);
-	
-	ThrowIfFailed(D3DCreateBlob(iByteCount, &pGeo->IndexBufferCPU));
-	CopyMemory(pGeo->IndexBufferCPU->GetBufferPointer(), indices.data(), iByteCount);
-	
-	ID3D12Device* device = FS_Device::Get()->m_d3dDevice.Get();
-	ID3D12GraphicsCommandList* cmdList = FS_Device::Get()->m_FSCmd->mCommandList.Get();
+	MeshGeometry* GeometryManager::BuildGeometry(GeometryData* goeData)
+	{
+		std::vector<Vertex> vertex = goeData->m_Vertices;
+		UINT vByteCount = goeData->m_Vertices.size() * sizeof(Vertex);
+		std::vector<uint16_t> indices = goeData->m_Indices;
+		UINT iByteCount = goeData->m_Indices.size() * sizeof(uint16_t);
 
-	pGeo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(device,
-		cmdList, vertex.data(), vByteCount, pGeo->VertexBufferUploader);
-	
-	pGeo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(device,
-		cmdList, indices.data(), iByteCount, pGeo->IndexBufferUploader);
-	
-	pGeo->VertexByteStride = sizeof(Vertex);
-	pGeo->VertexBufferByteSize = vByteCount;
-	pGeo->IndexFormat = DXGI_FORMAT_R16_UINT;
-	pGeo->IndexBufferByteSize = iByteCount;
-	pGeo->IndexCount = iByteCount / sizeof(uint16_t);
+		MeshGeometry* pGeo = new MeshGeometry();
+		ThrowIfFailed(D3DCreateBlob(vByteCount, &pGeo->m_VertexBufferCPU));
+		CopyMemory(pGeo->m_VertexBufferCPU->GetBufferPointer(), vertex.data(), vByteCount);
 
-	return pGeo;
-}
+		ThrowIfFailed(D3DCreateBlob(iByteCount, &pGeo->m_IndexBufferCPU));
+		CopyMemory(pGeo->m_IndexBufferCPU->GetBufferPointer(), indices.data(), iByteCount);
 
-GeometryManager::GeometryManager()
-{
-	FS_Command* cmdList = FS_Device::Get()->CommandList();
+		ID3D12Device* device = Device::GetD3DDevice().Get();
+		ID3D12GraphicsCommandList* cmdList = Device::GetCommand()->m_CommandList.Get();
 
-	ThrowIfFailed(cmdList->mCommandList->Reset(cmdList->mDirectCmdListAlloc.Get(), nullptr));
+		pGeo->m_VertexBufferGPU = d3dUtil::CreateDefaultBuffer(device,
+			cmdList, vertex.data(), vByteCount, pGeo->m_VertexBufferUploader);
 
-	m_geometries.push_back(BuildGeometry(GeometryGenerator::CreateBox()));
-	m_geometries.push_back(BuildGeometry(GeometryGenerator::CreatePyramid()));
-	m_geometries.push_back(BuildGeometry(GeometryGenerator::CreateSphere(1.0f, 20, 20)));
-	m_geometries.push_back(BuildGeometry(GeometryGenerator::CreatePlane(1.0f, 1.0f)));
-	m_geometries.push_back(BuildGeometry(GeometryGenerator::CreateCylinder(1.0f, 1.0f, 3.0f, 50, 50)));
-	m_geometries.push_back(BuildGeometry(GeometryGenerator::CreateCapsule(1.0f, 2.0f, 20, 20)));
+		pGeo->m_IndexBufferGPU = d3dUtil::CreateDefaultBuffer(device,
+			cmdList, indices.data(), iByteCount, pGeo->m_IndexBufferUploader);
 
-	m_instance = this;
+		pGeo->m_VertexByteStride = sizeof(Vertex);
+		pGeo->m_VertexBufferByteSize = vByteCount;
+		pGeo->m_IndexFormat = DXGI_FORMAT_R16_UINT;
+		pGeo->m_IndexBufferByteSize = iByteCount;
+		pGeo->m_IndexCount = iByteCount / sizeof(uint16_t);
 
-	cmdList->ExecuteCommands();
+		return pGeo;
+	}
 
-	cmdList->FlushCommandQueue();
-}
+	GeometryManager::GeometryManager()
+	{
+		CommandList* cmdList = Device::GetCommand();
 
-GeometryManager* GeometryManager::Get()
-{
-	if (m_instance == nullptr)
-		m_instance = new GeometryManager();
+		ThrowIfFailed(cmdList->m_CommandList->Reset(cmdList->m_DirectCmdListAlloc.Get(), nullptr));
 
-	return m_instance;
+		m_geometries.push_back(BuildGeometry(GeometryGenerator::CreateBox()));
+
+		m_geometries.push_back(BuildGeometry(GeometryGenerator::CreateBox_UVMapped()));
+
+		m_geometries.push_back(BuildGeometry(GeometryGenerator::CreatePyramid()));
+		m_geometries.push_back(BuildGeometry(GeometryGenerator::CreateSphere(0.5f, 10, 10)));
+		m_geometries.push_back(BuildGeometry(GeometryGenerator::CreatePlane(1.0f, 1.0f)));
+		m_geometries.push_back(BuildGeometry(GeometryGenerator::CreatePlaneScreenOriented(1.0f, 1.0f)));
+		m_geometries.push_back(BuildGeometry(GeometryGenerator::CreateCylinder(0.5f, 0.5f, 1.0f, 10, 10)));
+		m_geometries.push_back(BuildGeometry(GeometryGenerator::CreateCapsule(1.0f, 2.0f, 20, 20)));
+
+		m_instance = this;
+
+		cmdList->ExecuteCommands();
+
+		cmdList->FlushCommandQueue();
+	}
+
+	GeometryManager* GeometryManager::Get()
+	{
+		if (m_instance == nullptr)
+			m_instance = new GeometryManager();
+
+		return m_instance;
+	}
 }

@@ -1,6 +1,10 @@
 #include "pch.h"
 
-System::System()
+namespace FSE
 {
-	m_ecs = &ECS::Get();
+	System::System()
+	{
+		m_Ecs = &ECS::Get();
+	}
 }
+

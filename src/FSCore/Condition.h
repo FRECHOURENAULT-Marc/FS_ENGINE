@@ -1,16 +1,21 @@
 #pragma once
 
-template<typename T>
-class Condition 
+namespace FSC
 {
-    bool Test(T* owner);
 
-public:
-    bool expected = true;
+    template<typename T>
+    class Condition
+    {
+        bool Test(T* owner);
 
-    virtual bool OnTest(T* owner) = 0;
+    public:
+        bool m_IsExpected = true;
 
-    friend Transition<T>;
-};
+        virtual bool OnTest(T* owner) = 0;
+
+        friend Transition<T>;
+    };
+
+}
 
 #include "Condition.inl"

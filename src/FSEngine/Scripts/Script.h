@@ -1,21 +1,31 @@
 #pragma once
 
-class ECS;
-
-class Script 
+namespace FSE
 {
-protected:
-	ECS* m_ecs;
-public:
-	Script();
+	class ECS;
 
-	virtual void OnStart() {};
-	virtual void OnUpdate() {};
-};
+	class Script
+	{
+	protected:
+		ECS* m_Ecs;
+
+		bool m_IsInit = false;
+
+	public:
+		Script();
+
+		bool IsInit() { return m_IsInit; };
+
+		void Update();
+		void Start();
+		virtual void OnStart() {};
+		virtual void OnUpdate() {};
+	};
+}
 
 //Declare a script derived class
 #define DECLARE_SCRIPT(name)    \
-class name : public Script      \
+class name : public FSE::Script \
 {                               \
 public :                        \
 name() : Script() {};
@@ -30,8 +40,8 @@ name() : parent() {};
 //Add a script to the ECS (can be use everywhere in the code, after the script declaration)
 //Create a lambda (function with no capture (= havent access to an extern variable) and without parameter) that execute itself in the same time
 //We use inline to avoid multiple definitions errors, especially in .h files
-#define ADD_SCRIPT(name)                    \
-    inline bool name##Registered = [](){    \
-        ECS::Get().AddScript(new name());   \
-        return true;                        \
+#define ADD_SCRIPT(name)						\
+    inline bool name##Registered = [](){		\
+        FSE::ECS::Get().AddScript(new name());  \
+        return true;							\
     }();

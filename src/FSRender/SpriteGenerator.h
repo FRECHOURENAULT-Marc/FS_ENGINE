@@ -1,14 +1,19 @@
 #pragma once
 
-class SpriteGenerator
+namespace FSR
 {
-	static inline SpriteGenerator* m_instance = nullptr;
+	class SpriteGenerator
+	{
+		static inline SpriteGenerator* m_Instance = nullptr;
 
-public:
-	SpriteGenerator();
+	public:
+		SpriteGenerator();
 
-	static SpriteGenerator* Get();
-	//Texture name or Material name need to be created before creating the sprite
-	static FS_Sprite* CreateSprite(std::string name, bool isMat = false);
-};
+		static SpriteGenerator* Get();
+		//Texture name or Material name need to be created before creating the sprite
+		static Object2D* CreateSprite(std::string name, bool isMat = false);
+	};
+}
+
+
 

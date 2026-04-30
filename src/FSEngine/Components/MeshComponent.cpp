@@ -1,59 +1,64 @@
 #include "pch.h"
 
-
-void MeshComponent::Reset()
+namespace FSE
 {
-	if (m_3dObject != nullptr)
-		FS_Device::Get()->RemoveObject(m_3dObject);
-	m_3dObject = nullptr;
-}
 
-void MeshComponent::MoveObjectToCorrectRenderVector(FS_Material* mat)
-{
-	if (mat->Shader->mIsUI)
-		return;
-
-	if (mat->Shader->m_isTransparent)
+	void MeshComponent::Reset()
 	{
-		FS_Device::Renderer()->MoveToAlphaRender(m_3dObject);
-		return;
+		if (m_Object3D != nullptr)
+			Device::Get()->RemoveObject(m_Object3D);
+		m_Object3D = nullptr;
 	}
-	if (mat->Shader->m_isTransparent == false)
+
+	void MeshComponent::MoveObjectToCorrectRenderVector(Material* mat)
 	{
-		FS_Device::Renderer()->MoveToRender(m_3dObject);
-		return;
+		if (mat->Shader->IsUI())
+			return;
+
+		if (mat->Shader->IsTransparent())
+		{
+			Device::GetRenderer()->MoveToAlphaRender(m_Object3D);
+			return;
+		}
+		if (mat->Shader->IsTransparent()== false)
+		{
+			Device::GetRenderer()->MoveToRender(m_Object3D);
+			return;
+		}
 	}
-}
 
-MeshComponent::MeshComponent() : Component()
-{
-}
-
-bool MeshComponent::SetGeometry(MeshGeometry* mesh)
-{
-	if (ECS::Get().GetComponent<TransformComponent>(m_id)->IsActive() == false)
-		return false;
-
-	if(m_3dObject != nullptr)
-		FS_Device::Get()->RemoveObject(m_3dObject);
-
-	m_3dObject = new FS_3DObject(mesh);
-	FS_Device::Get()->AddObject(m_3dObject);
-	return true;
-}
-
-bool MeshComponent::SetMaterial(std::string name)
-{
-	int matIndex = MaterialManager::GetMaterialIndex(name);
-	if (matIndex == -1)
+	MeshComponent::MeshComponent() : Component()
 	{
-		std::cout << "MeshComponent::SetMaterial : Material " << name << " not found." << std::endl;
-		return false;
 	}
-	m_3dObject->SetMaterialIndex(matIndex);
 
-	FS_Material* mat = MaterialManager::GetMaterial(name);
-	MoveObjectToCorrectRenderVector(mat);
-	
-	return true;
+	bool MeshComponent::SetGeometry(MeshGeometry* mesh)
+	{
+		if (ECS::Get().GetComponent<TransformComponent>(m_ID)->IsActive() == false)
+			return false;
+
+		if (m_Object3D != nullptr)
+			Device::Get()->RemoveObject(m_Object3D);
+
+		m_MeshData = mesh;
+		m_Object3D = new Object3D(mesh);
+		Device::Get()->AddObject(m_Object3D);
+		return true;
+	}
+
+	bool MeshComponent::SetMaterial(std::string name)
+	{
+		int matIndex = MaterialManager::GetMaterialIndex(name);
+		if (matIndex == -1)
+		{
+			D::Cout("MeshComponent::SetTexture : Material " + name + " not found.");
+			return false;
+		}
+		m_Object3D->SetMaterialIndex(matIndex);
+
+		Material* mat = MaterialManager::GetMaterial(name);
+		MoveObjectToCorrectRenderVector(mat);
+
+		return true;
+	}
 }
+

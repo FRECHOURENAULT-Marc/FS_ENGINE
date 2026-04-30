@@ -1,22 +1,26 @@
 #include "pch.h"
 
-EmitterSystem::EmitterSystem() : System()
+namespace FSE
 {
-	srand(time(nullptr));
-}
-
-void EmitterSystem::Update(float dt)
-{
-	if (m_ecs->IsParticuleEnabled() == false)
-		return;
-
-	auto& emitters = m_ecs->GetAllFromType<EmitterComponent>();
-
-	for (int i = 0; i < emitters.size(); i++)
+	EmitterSystem::EmitterSystem() : System()
 	{
-		EmitterComponent& emitter = emitters[i];
-		if (emitter.IsActive() == false)
-			continue;
-		emitter.Update(dt);
+		srand(time(nullptr));
+	}
+
+	void EmitterSystem::Update(float dt)
+	{
+		if (m_Ecs->IsParticuleEnabled() == false)
+			return;
+
+		auto emitters = m_Ecs->GetAllFromType<EmitterComponent>();
+
+		for (int i = 0; i < MAX_COMPONENTS; i++)
+		{
+			EmitterComponent& emitter = emitters[i];
+			if (emitter.IsActive() == false)
+				continue;
+			emitter.Update(dt);
+		}
 	}
 }
+

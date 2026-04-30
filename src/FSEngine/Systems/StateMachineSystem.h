@@ -1,10 +1,16 @@
 #pragma once
 
-class StateMachineSystem : public System
+namespace FSE
 {
-public:
-	StateMachineSystem() : System() {};
 
-	virtual void Update(float dt) override;
+	class StateMachineSystem : public System
+	{
+	public:
+		StateMachineSystem() : System() {};
 
-};
+		virtual void Update(float dt) override;
+
+	};
+
+}
+

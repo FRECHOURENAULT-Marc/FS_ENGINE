@@ -1,19 +1,23 @@
 #include "pch.h"
 
-
-void UpdateMeshWorldSystem::Update(float dt)
+namespace FSE
 {
-	auto& transforms = m_ecs->GetAllFromType<TransformComponent>();
-	auto& meshs = m_ecs->GetAllFromType<MeshComponent>();
-
-	for (int i = 0; i < transforms.size(); i++)
+	void UpdateMeshWorldSystem::Update(float dt)
 	{
-		TransformComponent& trs = transforms[i];
-		MeshComponent& mesh = meshs[i];
-		if (trs.IsActive() == false || mesh.IsActive() == false)
-			continue;
-		if (trs.IsUpdatedThisFrame() == false)
-			continue;
-		mesh.SetWorld(trs.GetWorldMatrix());
+		auto transforms = m_Ecs->GetAllFromType<TransformComponent>();
+		auto meshs = m_Ecs->GetAllFromType<MeshComponent>();
+
+		for (int i = 0; i < MAX_COMPONENTS; i++)
+		{
+			TransformComponent& trs = transforms[i];
+			MeshComponent& mesh = meshs[i];
+			if (trs.IsActive() == false || mesh.IsActive() == false)
+				continue;
+			if (trs.IsUpdatedThisFrame() == false)
+				continue;
+			mesh.SetWorld(trs.GetWorldMatrix());
+		}
 	}
 }
+
+

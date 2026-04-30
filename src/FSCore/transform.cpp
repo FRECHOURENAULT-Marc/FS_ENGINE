@@ -1,222 +1,226 @@
 #include "pch.h"
 
-
-Transform::Transform() 
+namespace FSC
 {
-	Identity();
-}
-void Transform::Identity()
-{
-	pos = { 0, 0, 0 };
-	sca = { 1, 1, 1 };
-	yaw		= 0.0f;
-	pitch	= 0.0f;
-	roll	= 0.0f;
-	ResetRotation();
-}
-XMFLOAT4X4 Transform::GetWorld()
-{
-	if (isWorldUpdated == false)
-		UpdateWorld();
 
-	return world;
-}
-XMFLOAT4X4 Transform::GetInvWorld()
-{
-	if (isInvWorldUpdated == false)
-		UpdateInvWorld();
-	return invWorld;
-}
+	Transform::Transform()
+	{
+		Identity();
+	}
+	void Transform::Identity()
+	{
+		m_Pos = { 0, 0, 0 };
+		m_Scale = { 1, 1, 1 };
+		m_Yaw = 0.0f;
+		m_Pitch = 0.0f;
+		m_Roll = 0.0f;
+		ResetRotation();
+	}
+	XMFLOAT4X4 Transform::GetWorld()
+	{
+		if (m_IsWorldUpdated == false)
+			UpdateWorld();
 
-XMFLOAT3 Transform::GetYPR()
-{
-	return XMFLOAT3(yaw, pitch, roll);
-}
+		return m_World;
+	}
+	XMFLOAT4X4 Transform::GetInvWorld()
+	{
+		if (m_IsInvWorldUpdated == false)
+			UpdateInvWorld();
+		return m_InvWorld;
+	}
 
-void Transform::SetWorld(XMFLOAT4X4 _world)
-{ 
-	world = _world; 
-	isWorldUpdated = false; 
-	isInvWorldUpdated = false; 
-}
+	XMFLOAT3 Transform::GetYPR()
+	{
+		return XMFLOAT3(m_Yaw, m_Pitch, m_Roll);
+	}
 
-void Transform::UpdateWorld()
-{
-	XMVECTOR _scale = XMLoadFloat3(&sca);
-	XMVECTOR _pos	= XMLoadFloat3(&pos);
+	void Transform::SetWorld(XMFLOAT4X4 _world)
+	{
+		m_World = _world;
+		m_IsWorldUpdated = false;
+		m_IsInvWorldUpdated = false;
+	}
 
-	XMVECTOR sx = XMVectorSplatX(_scale);
-	XMVECTOR sy = XMVectorSplatX(_scale);
-	XMVECTOR sz = XMVectorSplatX(_scale);
+	void Transform::UpdateWorld()
+	{
+		XMVECTOR _scale = XMLoadFloat3(&m_Scale);
+		XMVECTOR _pos = XMLoadFloat3(&m_Pos);
 
-	XMMATRIX _world = XMLoadFloat4x4(&rot);
-	_world.r[0] = XMVectorMultiply(_world.r[0], sx);
-	_world.r[1] = XMVectorMultiply(_world.r[1], sy);
-	_world.r[2] = XMVectorMultiply(_world.r[2], sz);
-	_world.r[3] = XMVectorSetW(_pos, 1.0f);
+		XMVECTOR sx = XMVectorSplatX(_scale);
+		XMVECTOR sy = XMVectorSplatY(_scale);
+		XMVECTOR sz = XMVectorSplatZ(_scale);
 
-	XMStoreFloat4x4(&world, _world);
-	isWorldUpdated		= true;
-	isInvWorldUpdated	= false;
-}
-void Transform::UpdateInvWorld()
-{
-	XMFLOAT4X4 _world = GetWorld();
-	XMMATRIX _invWorld = XMMatrixInverse(nullptr, XMLoadFloat4x4(&_world));
-	XMStoreFloat4x4(&invWorld, _invWorld);
+		XMMATRIX _world = XMLoadFloat4x4(&m_Rot);
+		_world.r[0] = XMVectorMultiply(_world.r[0], sx);
+		_world.r[1] = XMVectorMultiply(_world.r[1], sy);
+		_world.r[2] = XMVectorMultiply(_world.r[2], sz);
+		_world.r[3] = XMVectorSetW(_pos, 1.0f);
 
-	isInvWorldUpdated = true;
-}
+		XMStoreFloat4x4(&m_World, _world);
+		m_IsWorldUpdated = true;
+		m_IsInvWorldUpdated = false;
+	}
+	void Transform::UpdateInvWorld()
+	{
+		XMFLOAT4X4 _world = GetWorld();
+		XMMATRIX _invWorld = XMMatrixInverse(nullptr, XMLoadFloat4x4(&_world));
+		XMStoreFloat4x4(&m_InvWorld, _invWorld);
 
-void Transform::SetScaling(float scale)
-{
-	sca.x = scale;
-	sca.y = scale; 		
-	sca.z = scale;
-	isWorldUpdated = false;
-}
-void Transform::SetScaling(float sx, float sy, float sz)
-{
-	sca.x = sx;
-	sca.y = sy;
-	sca.z = sz;
-	isWorldUpdated = false;
-}
-void Transform::Scale(float scale)
-{
-	sca.x *= scale; 
-	sca.y *= scale; 
-	sca.z *= scale;
-	isWorldUpdated = false;
-}
-void Transform::Scale(float sx, float sy, float sz)
-{
-	sca.x *= sx;
-	sca.y *= sy;
-	sca.z *= sz;
-	isWorldUpdated = false;
-}
+		m_IsInvWorldUpdated = true;
+	}
 
-void Transform::SetPosition(float x, float y, float z)
-{
-	pos.x = x;
-	pos.y = y;
-	pos.z = z;
-	isWorldUpdated = false;
-}
+	/*void Transform::SetScaling(float scale)
+	{
+		m_Scale.x = scale;
+		m_Scale.y = scale;
+		m_Scale.z = scale;
+		m_IsWorldUpdated = false;
+	}*/
+	void Transform::SetScaling(float sx, float sy, float sz)
+	{
+		m_Scale.x = sx;
+		m_Scale.y = sy;
+		m_Scale.z = sz;
+		m_IsWorldUpdated = false;
+	}
+	void Transform::Scale(float scale)
+	{
+		m_Scale.x *= scale;
+		m_Scale.y *= scale;
+		m_Scale.z *= scale;
+		m_IsWorldUpdated = false;
+	}
+	void Transform::Scale(float sx, float sy, float sz)
+	{
+		m_Scale.x *= sx;
+		m_Scale.y *= sy;
+		m_Scale.z *= sz;
+		m_IsWorldUpdated = false;
+	}
 
-void Transform::Move(float dist)
-{
-	pos.x += forward.x * dist;
-	pos.y += forward.y * dist;
-	pos.z += forward.z * dist;
-	isWorldUpdated = false;
-}
+	void Transform::SetPosition(float x, float y, float z)
+	{
+		m_Pos.x = x;
+		m_Pos.y = y;
+		m_Pos.z = z;
+		m_IsWorldUpdated = false;
+	}
 
-void Transform::ResetRotation()
-{
-	forward	= { 0.0f, 0.0f, 1.0f };
-	right	= { 1.0f, 0.0f, 0.0f };
-	up		= { 0.0f, 1.0f, 0.0f };
-	quat	= { 0.0f, 0.0f, 0.0f, 1.0f };
-	XMStoreFloat4x4(&rot, XMMatrixIdentity());
-	isWorldUpdated = false;
-}
-void Transform::SetRotation(Transform& trs)
-{
-	yaw		= trs.yaw;
-	pitch	= trs.pitch;
-	roll	= trs.roll;
-	forward	= trs.forward;
-	right	= trs.right;
-	up		= trs.up;
-	quat	= trs.quat;
-	rot		= trs.rot;
-	isWorldUpdated = false;
-}
-void Transform::SetRotationFromQuaternion()
-{
-	XMStoreFloat4x4(&rot, XMMatrixRotationQuaternion(XMLoadFloat4(&quat)));
+	void Transform::Move(float dist)
+	{
+		m_Pos.x += m_Forward.x * dist;
+		m_Pos.y += m_Forward.y * dist;
+		m_Pos.z += m_Forward.z * dist;
+		m_IsWorldUpdated = false;
+	}
 
-	right.x		= rot.m[0][0]; // _11, _12, _13
-	right.y		= rot.m[0][1];
-	right.z		= rot.m[0][2];
+	void Transform::ResetRotation()
+	{
+		m_Forward = { 0.0f, 0.0f, 1.0f };
+		m_Right = { 1.0f, 0.0f, 0.0f };
+		m_Up = { 0.0f, 1.0f, 0.0f };
+		m_Quat = { 0.0f, 0.0f, 0.0f, 1.0f };
+		XMStoreFloat4x4(&m_Rot, XMMatrixIdentity());
+		m_IsWorldUpdated = false;
+	}
+	void Transform::SetRotation(Transform& trs)
+	{
+		m_Yaw		= trs.m_Yaw;
+		m_Pitch		= trs.m_Pitch;
+		m_Roll		= trs.m_Roll;
+		m_Forward	= trs.m_Forward;
+		m_Right		= trs.m_Right;
+		m_Up		= trs.m_Up;
+		m_Quat		= trs.m_Quat;
+		m_Rot		= trs.m_Rot;
+		m_IsWorldUpdated = false;
+	}
+	void Transform::SetRotationFromQuaternion()
+	{
+		XMStoreFloat4x4(&m_Rot, XMMatrixRotationQuaternion(XMLoadFloat4(&m_Quat)));
 
-	up.x		= rot.m[1][0]; // _21, _22, _23
-	up.y		= rot.m[1][1];
-	up.z		= rot.m[1][2];
+		m_Right.x = m_Rot.m[0][0]; // _11, _12, _13
+		m_Right.y = m_Rot.m[0][1];
+		m_Right.z = m_Rot.m[0][2];
 
-	forward.x	= rot.m[2][0]; // _31, _32, _33
-	forward.y	= rot.m[2][1];
-	forward.z	= rot.m[2][2];
+		m_Up.x = m_Rot.m[1][0]; // _21, _22, _23
+		m_Up.y = m_Rot.m[1][1];
+		m_Up.z = m_Rot.m[1][2];
 
-	isWorldUpdated = false;
-}
+		m_Forward.x = m_Rot.m[2][0]; // _31, _32, _33
+		m_Forward.y = m_Rot.m[2][1];
+		m_Forward.z = m_Rot.m[2][2];
 
-void Transform::OrbitAroundAxis(XMFLOAT3& center, XMFLOAT3& axis, float radius, float angle)
-{
-	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	XMVECTOR right = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+		m_IsWorldUpdated = false;
+	}
 
-	XMVECTOR nAxis = XMVector3Normalize(XMLoadFloat3(&axis));
-	float d = XMVectorGetX(XMVector3Dot(nAxis, up));
-	XMVECTOR ref = fabsf(d) > 0.99f ? right : up;
-	XMVECTOR radialDir = XMVector3Normalize(XMVector3Cross(nAxis, ref));
-	XMVECTOR radial = XMVectorScale(radialDir, radius);
-	XMMATRIX r = XMMatrixRotationAxis(nAxis, angle);
-	XMVECTOR rotatedRadial = XMVector3TransformNormal(radial, r);
-	XMVECTOR position = XMVectorAdd(XMLoadFloat3(&center), rotatedRadial);
-	SetPosition(XMVectorGetX(position), XMVectorGetY(position), XMVectorGetZ(position));
+	void Transform::OrbitAroundAxis(XMFLOAT3& center, XMFLOAT3& axis, float radius, float angle)
+	{
+		XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+		XMVECTOR right = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
 
-	// Marquer la matrice monde/inverse comme à recalculer
-	isWorldUpdated = false;
-	isInvWorldUpdated = false;
-}
+		XMVECTOR nAxis = XMVector3Normalize(XMLoadFloat3(&axis));
+		float d = XMVectorGetX(XMVector3Dot(nAxis, up));
+		XMVECTOR ref = fabsf(d) > 0.99f ? right : up;
+		XMVECTOR radialDir = XMVector3Normalize(XMVector3Cross(nAxis, ref));
+		XMVECTOR radial = XMVectorScale(radialDir, radius);
+		XMMATRIX r = XMMatrixRotationAxis(nAxis, angle);
+		XMVECTOR rotatedRadial = XMVector3TransformNormal(radial, r);
+		XMVECTOR position = XMVectorAdd(XMLoadFloat3(&center), rotatedRadial);
+		SetPosition(XMVectorGetX(position), XMVectorGetY(position), XMVectorGetZ(position));
 
-void Transform::SetYPR(float _yaw, float _pitch, float _roll)
-{
-	ResetRotation();
-	yaw		= 0.0f;
-	pitch	= 0.0f;
-	roll	= 0.0f;
-	AddYPR(_yaw, _pitch, _roll);
+		// Marquer la matrice monde/inverse comme à recalculer
+		m_IsWorldUpdated = false;
+		m_IsInvWorldUpdated = false;
+	}
 
-}
-void Transform::AddYPR(float _yaw, float _pitch, float _roll)
-{
-	if (_yaw == 0.0f && _pitch == 0.0f && _roll == 0.0f)
-		return;
-	ResetRotation();
+	void Transform::SetYPR(float _yaw, float _pitch, float _roll)
+	{
+		ResetRotation();
+		m_Yaw = 0.0f;
+		m_Pitch = 0.0f;
+		m_Roll = 0.0f;
+		AddYPR(_yaw, _pitch, _roll);
 
-	XMVECTOR axisForward= XMLoadFloat3(&forward);
-	XMVECTOR axisRight = XMLoadFloat3(&right);
-	XMVECTOR axisUp = XMLoadFloat3(&up);
-	XMVECTOR quatRot = XMLoadFloat4(&quat);
+	}
+	void Transform::AddYPR(float _yaw, float _pitch, float _roll)
+	{
+		if (_yaw == 0.0f && _pitch == 0.0f && _roll == 0.0f)
+			return;
+		ResetRotation();
 
-	roll += _roll;
-	quatRot = XMQuaternionMultiply(quatRot, XMQuaternionRotationAxis(axisForward, roll));
+		XMVECTOR axisForward = XMLoadFloat3(&m_Forward);
+		XMVECTOR axisRight = XMLoadFloat3(&m_Right);
+		XMVECTOR axisUp = XMLoadFloat3(&m_Up);
+		XMVECTOR quatRot = XMLoadFloat4(&m_Quat);
 
-	pitch += _pitch;
-	quatRot = XMQuaternionMultiply(quatRot, XMQuaternionRotationAxis(axisRight, pitch));
+		m_Roll += _roll;
+		quatRot = XMQuaternionMultiply(quatRot, XMQuaternionRotationAxis(axisForward, m_Roll));
 
-	yaw += _yaw;
-	quatRot = XMQuaternionMultiply(quatRot, XMQuaternionRotationAxis(axisUp, yaw));
+		m_Pitch += _pitch;
+		quatRot = XMQuaternionMultiply(quatRot, XMQuaternionRotationAxis(axisRight, m_Pitch));
 
-	quatRot = XMQuaternionNormalize(quatRot);
-	XMStoreFloat4(&quat, quatRot);
+		m_Yaw += _yaw;
+		quatRot = XMQuaternionMultiply(quatRot, XMQuaternionRotationAxis(axisUp, m_Yaw));
 
-	SetRotationFromQuaternion();
-}
+		quatRot = XMQuaternionNormalize(quatRot);
+		XMStoreFloat4(&m_Quat, quatRot);
 
-void Transform::AddYaw(float yaw)
-{
-	AddYPR(yaw, 0.0f, 0.0f);
-}
-void Transform::AddPitch(float pitch)
-{
-	AddYPR(0.0f, pitch, 0.0f);
-}
-void Transform::AddRoll(float roll)
-{
-	AddYPR(0.0f, 0.0f, roll);
+		SetRotationFromQuaternion();
+	}
+
+	void Transform::AddYaw(float yaw)
+	{
+		AddYPR(yaw, 0.0f, 0.0f);
+	}
+	void Transform::AddPitch(float pitch)
+	{
+		AddYPR(0.0f, pitch, 0.0f);
+	}
+	void Transform::AddRoll(float roll)
+	{
+		AddYPR(0.0f, 0.0f, roll);
+	}
+
 }

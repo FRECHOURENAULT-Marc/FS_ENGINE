@@ -1,28 +1,33 @@
 #include "pch.h"
 
-template<typename T>
-template<typename U>
-U* Transition<T>::AddCondition(bool expected)
+namespace FSC
 {
-	static_assert(std::is_base_of<Condition<T>, U>::value, "T must be derived from Condition");
 
-	U* pCondition = new U();
-
-	pCondition->expected = expected;
-
-	mConditions.push_back(pCondition);
-
-	return pCondition;
-}
-
-template<typename T>
-bool Transition<T>::Try(T* owner)
-{
-	for (const auto& c : mConditions)
+	template<typename T>
+	template<typename U>
+	U* Transition<T>::AddCondition(bool m_IsExpected)
 	{
-		if (c->Test(owner) == false)
-			return false;
+		static_assert(std::is_base_of<Condition<T>, U>::value, "T must be derived from Condition");
+
+		U* pCondition = new U();
+
+		pCondition->m_IsExpected = m_IsExpected;
+
+		m_Conditions.push_back(pCondition);
+
+		return pCondition;
 	}
 
-	return true;
+	template<typename T>
+	bool Transition<T>::Try(T* owner)
+	{
+		for (const auto& c : m_Conditions)
+		{
+			if (c->Test(owner) == false)
+				return false;
+		}
+
+		return true;
+	}
+
 }

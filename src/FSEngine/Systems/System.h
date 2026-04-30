@@ -1,17 +1,21 @@
 #pragma once
 
-class ECS;
-
-class System
+namespace FSE
 {
-protected:
-	ECS* m_ecs = nullptr;
+	class ECS;
 
-	System();
-public:
+	class System
+	{
+	protected:
+		ECS* m_Ecs = nullptr;
 
-	virtual void Update(float dt) {}; //override this
-	virtual void AfterUpdate(float dt) {}; //override this
+		System();
+	public:
 
-	friend class ECS;
-};
+		virtual void Update(float dt) {}; //override this
+		virtual void AfterUpdate(float dt) {}; //override this
+
+		friend class ECS;
+	};
+}
+

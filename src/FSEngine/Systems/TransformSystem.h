@@ -1,11 +1,18 @@
 #pragma once
 
-class TransformSystem : public System
+namespace FSE
 {
 
-public:
-	TransformSystem() : System() {};
+	class TransformSystem : public System
+	{
 
-	virtual void Update(float dt) override;
-};
+	public:
+		TransformSystem() : System() {};
+
+		virtual void AfterUpdate(float dt) override;
+	};
+
+}
+
+
 

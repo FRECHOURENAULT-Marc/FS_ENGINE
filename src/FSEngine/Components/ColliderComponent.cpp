@@ -1,51 +1,92 @@
 #include "pch.h"
 
-void ColliderComponent::Reset()
+namespace FSE
 {
-	mCollidingWith.clear();
-	if (mCollider != nullptr)
+	void ColliderComponent::Reset()
 	{
-		delete(mCollider);
-		mCollider = nullptr;
+		m_CollidingWith.clear();
+		if (m_Collider != nullptr)
+		{
+			delete(m_Collider);
+			m_Collider = nullptr;
+		}
+		m_Tag = "";
+		SceneManager::Get()->GetActiveScene<Scene>()->RemoveFromLayer(this);
 	}
+
+	bool ColliderComponent::IsColliding(ColliderComponent* other)
+	{
+		if (other->GetCollider() == nullptr)
+			return false;
+		return m_Collider->IsColliding(other->GetCollider());
+	}
+
+	void ColliderComponent::AddToDefaultLayer()
+	{
+		SceneManager::Get()->GetActiveScene<Scene>()->AddToLayer(this, BASE_COLLIDERS_LAYER);
+	}
+
+	void ColliderComponent::EnsureTransform()
+	{
+		if (m_Collider != nullptr)
+			return;
+
+		//Need a transform to use a collider
+		TransformComponent* trs = ECS::Get().GetComponent<TransformComponent>(m_ID);
+
+		if (trs == nullptr)
+			ThrowIfFailed(E_FAIL);
+		if (trs->IsActive() == false)
+			ThrowIfFailed(E_FAIL);
+	}
+
+	void ColliderComponent::Update()
+	{
+		TransformComponent* trs = ECS::Get().GetComponent<TransformComponent>(m_ID);
+		m_Collider->SetPosition(trs->GetWorldPosition());
+
+		if (trs->IsUpdatedThisFrame() == false)
+			return;
+
+		XMFLOAT3 scale = trs->GetScale();
+		m_Collider->OnUpdate(scale);
+
+	}
+
+	void ColliderComponent::AddToLayer(std::string _layerName)
+	{
+		SceneManager::Get()->GetActiveScene<Scene>()->AddToLayer(this, _layerName);
+	}
+
+	ColliderComponent* ColliderComponent::IsCollidingWith(int otherEntityID)
+	{
+		for (auto* collider : m_CollidingWith)
+		{
+			if (collider->m_ID == otherEntityID)
+				return collider;
+		}
+		return nullptr;
+	}
+	ColliderComponent* ColliderComponent::IsCollidingWith(ColliderComponent* other)
+	{
+		for (auto* collider : m_CollidingWith)
+		{
+			if (collider == other)
+				return collider;
+		}
+		return nullptr;
+	}
+	ColliderComponent* ColliderComponent::IsCollidingWith(std::string tag)
+	{
+		for(auto* collider : m_CollidingWith)
+		{
+			if (collider->GetTag() == tag)
+				return collider;
+		}
+		return nullptr;
+	}
+
 }
 
-bool ColliderComponent::IsColliding(ColliderComponent* other)
-{
-	return mCollider->IsColliding(other->GetCollider());
-}
 
-void ColliderComponent::EnsureTransform()
-{
-	if (mCollider != nullptr)
-		return;
-
-	//Need a transform to use a collider
-	TransformComponent* trs = ECS::Get().GetComponent<TransformComponent>(m_id);
-
-	if (trs == nullptr)
-		ThrowIfFailed(E_FAIL);
-	if (trs->IsActive() == false)
-		ThrowIfFailed(E_FAIL);
-}
-
-void ColliderComponent::Update()
-{
-	TransformComponent* trs = ECS::Get().GetComponent<TransformComponent>(m_id);
-	mCollider->SetPosition(trs->GetWorldPosition());
-
-	XMFLOAT3 scale = trs->GetScale();
-	int maximum = max(max(scale.x, scale.y), trs->GetScale().z);
-	mCollider->SetScale(maximum);
-}
-
-bool ColliderComponent::IsCollidingWith(ColliderComponent* other)
-{
-	return utils::VectorContain(mCollidingWith, other);
-}
-
-bool ColliderComponent::IsCollidingWith(int other)
-{
-	return IsCollidingWith(ECS::Get().GetComponent<ColliderComponent>(other));
-}
 

@@ -1,11 +1,18 @@
 #pragma once
 
-class UpdateMeshWorldSystem : public System
+namespace FSE
 {
 
-public:
-	UpdateMeshWorldSystem() : System() {};
+	class UpdateMeshWorldSystem : public System
+	{
 
-	virtual void Update(float dt) override;
-};
+	public:
+		UpdateMeshWorldSystem() : System() {};
+
+		virtual void Update(float dt) override;
+	};
+
+}
+
+
 

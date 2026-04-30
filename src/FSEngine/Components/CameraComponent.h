@@ -1,32 +1,38 @@
 #pragma once
 
-class CameraComponent : public Component
+namespace FSE
 {
-	virtual void Reset() override;
 
-	XMFLOAT3 m_rotation = { 0,0,0 };
-	XMFLOAT3 m_limitMin = { -FLOAT_MAX, -FLOAT_MAX, -FLOAT_MAX };
-	XMFLOAT3 m_limitMax = { FLOAT_MAX, FLOAT_MAX, FLOAT_MAX };
-	bool m_IsMainCamera = false;
+	class CameraComponent : public Component
+	{
+		virtual void Reset() override;
 
-public:
-	CameraComponent();
+		XMFLOAT3 m_Rotation = { 0,0,0 };
+		XMFLOAT3 m_LimitMin = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+		XMFLOAT3 m_LimitMax = { FLT_MAX, FLT_MAX, FLT_MAX };
+		bool m_IsMainCamera = false;
 
-	void Update(XMFLOAT4X4 worldMtraix);
+	public:
+		CameraComponent();
 
-	bool IsMainCamera() { return m_IsMainCamera; }
+		void Update(XMFLOAT4X4 worldMtraix);
 
-	void RotateRad(float yaw, float pitch, float roll);
-	void SetRotationRad(float yaw, float pitch, float roll);
+		bool IsMainCamera() { return m_IsMainCamera; }
 
-	void SetRotationLimitYaw(float min, float max) { m_limitMin.x = min; m_limitMax.x = max; }
-	void SetRotationLimitPitch(float min, float max) { m_limitMin.y = min; m_limitMax.y = max; }
-	void SetRotationLimitRoll(float min, float max) { m_limitMin.z = min; m_limitMax.z = max; }
+		void RotateRad(float yaw, float pitch, float roll);
+		void SetRotationRad(float yaw, float pitch, float roll);
 
-	void SetMainCamera(bool isMain);
-	void SetLens(float fovY, float aspect, float zn, float zf) = delete;
+		void SetRotationLimitYaw(float min, float max) { m_LimitMin.x = min; m_LimitMax.x = max; }
+		void SetRotationLimitPitch(float min, float max) { m_LimitMin.y = min; m_LimitMax.y = max; }
+		void SetRotationLimitRoll(float min, float max) { m_LimitMin.z = min; m_LimitMax.z = max; }
 
-	friend class ECS;
-};
+		void SetMainCamera(bool isMain);
+		void SetLens(float fovY, float aspect, float zn, float zf) = delete;
+
+		friend class ECS;
+	};
+
+
+}
 
 

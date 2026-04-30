@@ -1,263 +1,239 @@
 #include "pch.h"
 
-#include <thread>
-#include <chrono>
-
-ECS::ECS()
+namespace FSE
 {
-	m_pInstance = this;
-
-	m_entities = new ObjectBuffer<Entity>(ENTITES_MAX);
-
-	m_transforms = InitComponentBuffer<TransformComponent>();
-	m_meshs = InitComponentBuffer<MeshComponent>();
-	m_velocities = InitComponentBuffer<VelocityComponent>();
-	m_stateMachines = InitComponentBuffer<StateMachineComponent>();
-	m_emitters = InitComponentBuffer<EmitterComponent>();
-	m_cameras = InitComponentBuffer<CameraComponent>();
-	m_colliders = InitComponentBuffer<ColliderComponent>();
-	m_lights = InitComponentBuffer<LightComponent>();
-
-	for (int i = 0; i < m_entities->Capacity(); i++)
-		m_entitiesFree.push_back(i);
-
-	CreateSystems();
-}
-
-ECS::~ECS()
-{
-	for(auto components : m_componentArrays)
-		delete(components);
-	m_componentArrays.clear();
-	for (auto system : m_systems)
-		delete(system);
-	m_systems.clear();
-	for (auto script : m_scripts)
-		delete(script);
-	m_scripts.clear();
-
-	FS_Device::Destroy();
-}
-
-
-void ECS::IncreaseVectorsCapacity()
-{
-	int oldCapacity = m_entities->Capacity();
-	m_entities->IncreaseSize();
-
-	m_transforms->IncreaseSize(); 
-	m_meshs->IncreaseSize(); 
-	m_velocities->IncreaseSize();
-	m_stateMachines->IncreaseSize();
-	m_emitters->IncreaseSize();
-	m_cameras->IncreaseSize();
-	m_colliders->IncreaseSize();
-	m_lights->IncreaseSize();
-
-	for (int i = oldCapacity; i < m_entities->Capacity(); i++)
-		m_entitiesFree.push_back(i);
-}
-
-void ECS::CallScriptsOnStart()
-{
-	int LastIndex = m_scriptsAdded.size() - 1;
-	for (int i = LastIndex; i >= 0 ; --i)
+	ECS::ECS()
 	{
-		Script* script = m_scriptsAdded[i];
-		script->OnStart();
-		m_scripts.push_back(script);
-
-		m_scriptsAdded.erase(m_scriptsAdded.begin() + i);
+		m_Instance = this;
 	}
-}
 
-void ECS::CreateSystems()
-{
-	m_systems.push_back(new MoveSystem());
-	m_systems.push_back(new UpdateMeshWorldSystem());
-	m_systems.push_back(new StateMachineSystem());
-	m_systems.push_back(new EmitterSystem());
-	m_systems.push_back(new CameraSystem());
-	m_systems.push_back(new ColliderSystem());
-	m_systems.push_back(new LightSystem());
-	m_systems.push_back(new TransformSystem());
-}
-
-void ECS::CreateManagers()
-{
-	FS_InputsManager::Get();
-
-	FS_InputsManager::s_windowHandle = FS_Device::Get()->m_FSWindow->GetWindowHandle();
-
-	GeometryManager::Get();
-
-	new FS_TextManager();
-}
-
-void ECS::UpdateDeltaTime() 
-{
-	m_clock.Tick();
-	m_deltaTime = m_clock.DeltaTime();
-	m_clock.Reset();
-	if (m_fpsLock <= 0)
-		return;
-	float targetFrameTime = (1.0f / m_fpsLock);
-	if (m_deltaTime > targetFrameTime)
-		return;
-
-	float timeToSleep = targetFrameTime - m_deltaTime;
-	Sleep(timeToSleep * 1000);
-	m_deltaTime = targetFrameTime;
-}
-
-void ECS::UpdateSystems()
-{
-	for (System* sys : m_systems)
-		sys->Update(m_deltaTime);
-
-	for (System* sys : m_systems)
-		sys->AfterUpdate(m_deltaTime);
-}
-
-void ECS::UpdateScripts()
-{
-	CallScriptsOnStart();
-	for (Script* script : m_scripts) 
-		script->OnUpdate();	
-}
-
-ECS& ECS::Create()
-{
-	if (m_pInstance != nullptr)
-		return *m_pInstance;
-		
-	return *new ECS();
-}
-void ECS::Close()
-{
-	delete(m_pInstance);
-}
-
-ECS& ECS::Get()
-{
-	if (m_pInstance == nullptr)
-		Create();
-
-	return *m_pInstance;
-}
-
-ECS* ECS::GetPtr()
-{
-	if (m_pInstance == nullptr)
-		Create();
-
-	return m_pInstance;
-}
-
-void ECS::Run(HINSTANCE hInstance, ECSSettings settings)
-{
-	ENALBLE_D3D12_DEBUG_LAYER
-	try
+	ECS::~ECS()
 	{
-		m_device = new FS_Device(hInstance);
-		if (!m_device->Initialize())
+		// TODO : Delete all Scenes
+		Device::Destroy();
+	}
+
+
+	void ECS::InitManagers()
+	{
+		m_ScMgr = SceneManager::Get();
+		InputsManager::Create();
+		InputsManager::SetHandle(Device::GetWindow()->GetWindowHandle());
+
+		GeometryManager::Get();
+
+		new UITextManager();
+	}
+
+	void ECS::UpdateDeltaTime()
+	{
+		m_Clock.Tick();
+		m_DeltaTime = m_Clock.DeltaTime();
+		m_Clock.Reset();
+		if (m_FpsLock <= 0)
+			return;
+		double targetFrameTime = (1.0f / m_FpsLock);
+		if (m_DeltaTime > targetFrameTime)
 			return;
 
-		m_camera = m_device->Camera();
-		m_window = m_device->Window();
-		m_window->SetDimension(settings.winWidth, settings.winHeight);
-	}
-	catch (DxException& e)
-	{
-		MessageBox(nullptr, e.ToString().c_str(), L"HR Failed", MB_OK);
-		return;
+		double timeToSleep = targetFrameTime - m_DeltaTime;
+		Sleep(timeToSleep * 1000);
+		m_DeltaTime = targetFrameTime;
 	}
 
-	m_particuleEnabled = settings.particuleEnable;
-	m_device->Renderer()->SetSpriteRender(settings.spriteEnable);
-
-	CreateManagers();
-
-	m_clock.Start();
-	float updateWindowNameTimer = 0.0f;
-	while (!m_window->IsClosed())
+	void ECS::UpdatePermanentScript()
 	{
-		UpdateDeltaTime();
+		int LastIndex = m_PermanentScriptsAdded.size() - 1;
+		for (int i = LastIndex; i >= 0; --i)
+		{
+			Script* script = m_PermanentScriptsAdded[i];
+			script->Start();
+			m_PermanentScripts.push_back(script);
 
-		FS_InputsManager::HandleInputs();
-
-		UpdateScripts();
-		UpdateSystems();
-		m_device->Renderer()->UpdateRender(m_deltaTime);//Update Render
-		debug::Update(m_deltaTime);
-
-		updateWindowNameTimer += m_deltaTime;
-		if (updateWindowNameTimer < 1.0f)
-			continue;
-		updateWindowNameTimer = 0.0f;
-		m_window->SetWindowName(L"** FS-ENGINE ** FPS: " + std::to_wstring((int)(1.0f / m_deltaTime)) + L" dt : " + std::to_wstring(m_deltaTime));
+			m_PermanentScriptsAdded.erase(m_PermanentScriptsAdded.begin() + i);
+		}
+		for (Script* script : m_PermanentScripts)
+			script->Update();
 	}
 
-	Close();
-}
-
-void ECS::LockFPS(int fps)
-{
-	m_fpsLock = fps;
-}
-
-Entity* ECS::GetEntity(int entityID)
-{
-	return m_entities->Get(entityID);
-}
-
-int ECS::CreateEntity()
-{
-	int freeIndex = 0;
-	if (m_entitiesFree.size() != 0) 
+	void ECS::UpdateWindowName(const ECSSettings& settings)
 	{
-		freeIndex = m_entitiesFree.back();
-		m_entitiesFree.pop_back();
+		m_UpdateWindowNameTimer += m_DeltaTime;
+		if (m_UpdateWindowNameTimer < 1.0f)
+			return;
+		m_UpdateWindowNameTimer = 0.0f;
+		m_Window->SetWindowName(settings.m_WinName + L" - FPS: " + std::to_wstring((int)(1.0f / m_DeltaTime)) + L" dt : " + std::to_wstring(m_DeltaTime));
 	}
-	else
-	{
-		freeIndex = m_entities->Capacity();
-		IncreaseVectorsCapacity();
-	}	
 
-	Entity* e = m_entities->Get(freeIndex);
-	e->Reset();
-	e->SetActive(true);
-	return e->GetID();
-}
-
-void ECS::RemoveEntity(int entityID)
-{
-	if (GetEntity(entityID)->IsActive() == false)
+	void ECS::AddScript(Script* script)
 	{
-		std::cout << "ECS::RemoveEntity : Entity " << entityID << " is already inactive" << std::endl;
-		return;
+		m_ScMgr->GetActiveScene<Scene>()->m_ScriptsAdded.push_back(script);
 	}
-	
-	m_entitiesFree.push_back(entityID);
 
-	auto compos = GetAllFromEntity(entityID);
-
-	m_entities->Get(entityID)->SetActive(false);
-	for (Component* c : compos) 
+	void ECS::AddPermanentScript(Script* script)
 	{
-		if(c == nullptr)
-			continue;
-		c->SetActive(false);
-		c->Reset();
+		m_PermanentScriptsAdded.push_back(script);
+	}
+
+	ECS& ECS::Create()
+	{
+		if (m_Instance != nullptr)
+			return *m_Instance;
+
+		return *new ECS();
+	}
+	void ECS::Close()
+	{
+		delete(m_Instance);
+	}
+
+	ECS& ECS::Get()
+	{
+		if (m_Instance == nullptr)
+			Create();
+
+		return *m_Instance;
+	}
+
+	ECS* ECS::GetPtr()
+	{
+		if (m_Instance == nullptr)
+			Create();
+
+		return m_Instance;
+	}
+
+	void ECS::Run(HINSTANCE hInstance, ECSSettings settings)
+	{
+		//ENALBLE_D3D12_DEBUG_LAYER
+		try
+		{
+			m_Device = new Device(hInstance);
+			if (!m_Device->Initialize())
+				return;
+
+			m_Camera = m_Device->GetCamera();
+			m_Window = m_Device->GetWindow();
+			m_Window->SetDimension(settings.m_WinWidth, settings.m_WinHeight);
+		}
+		catch (DxException& e)
+		{
+			MessageBox(nullptr, e.ToString().c_str(), L"HR Failed", MB_OK);
+			return;
+		}
+		m_Device->GetRenderer()->SetSpriteRender(settings.m_IsSpriteEnable);
+		m_Window->SetWindowName(settings.m_WinName);
+		m_IsParticuleEnabled = settings.m_IsParticuleEnable;
+
+		LockFPS(settings.m_FPSLock);
+		InitManagers();
+
+		m_Clock.Start();
+		m_IsStarted = true;
+		float updateWindowNameTimer = 0.0f;
+		while (!m_Window->IsClosed())
+		{
+			UpdateDeltaTime(); // Update value of deltaTime
+
+			InputsManager::HandleInputs(); // Update inputs (Mouse and Keyboard)
+
+			debug::Update(m_DeltaTime); // Clear debug objects/UI
+
+			UpdatePermanentScript(); // Update permanent scripts
+
+			m_ScMgr->Update(m_DeltaTime); // Update Scene (Scripts and Systems)
+			
+			InputsManager::ClearInputs(); // Clear MouseWheel delta for this frame
+
+			m_Device->GetRenderer()->UpdateRender(m_DeltaTime); // Update window messages(ex:MouseWheel/resize), Render and draw	
+
+			if (settings.m_ShowFPSInWindowName == false)
+				continue;
+			UpdateWindowName(settings);
+		}
+
+		Close();
+	}
+
+	void ECS::LockFPS(int fps)
+	{
+		m_FpsLock = fps;
+	}
+
+	Entity* ECS::GetEntity(int entityID)
+	{
+		return &m_ScMgr->GetActiveScene<Scene>()->m_Entities->Get(entityID);
+	}
+
+	int ECS::CreateEntity()
+	{
+		Scene* sc = m_ScMgr->GetActiveScene<Scene>();
+
+		int freeIndex = -1;
+		if (sc->m_EntitiesFree.size() != 0)
+		{
+			freeIndex = sc->m_EntitiesFree.back();
+			sc->m_EntitiesFree.pop_back();
+		}
+		else
+		{
+			D::Cout("ECS::CreateEntity : No more free entity, increase capacity before launching or remove entities.");
+			return -1;
+		}
+
+		Entity& e = sc->m_Entities->Get(freeIndex);
+		e.Reset();
+		e.SetActive(true);
+		return e.GetID();
+	}
+
+	void ECS::RemoveEntity(int entityID)
+	{
+		if (GetEntity(entityID)->IsActive() == false)
+		{
+			D::Cout("ECS::RemoveEntity : Entity " + std::to_string(entityID) + " is already inactive");
+			return;
+		}
+
+		Scene* sc = m_ScMgr->GetActiveScene<Scene>();
+
+		sc->m_EntitiesFree.push_back(entityID);
+		auto compos = GetAllFromEntity(entityID);
+		sc->m_Entities->Get(entityID).SetActive(false);
+		for (Component* c : compos)
+		{
+			if (c == nullptr)
+				continue;
+			c->SetActive(false);
+			c->Reset();
+		}
+	}
+
+	std::vector<ColliderComponent*>& ECS::GetLayer(std::string _name)
+	{
+		return m_ScMgr->GetActiveScene<Scene>()->m_Layers[_name];
+	}
+
+	std::map<std::string, std::vector<ColliderComponent*>>& ECS::GetLayersMap()
+	{
+		return m_ScMgr->GetActiveScene<Scene>()->m_Layers;
+	}
+
+	std::vector<Component*> ECS::GetAllFromEntity(int entityID)
+	{
+		std::vector<Component*> compos;
+		compos.push_back(GetComponent<TransformComponent>(entityID));
+		compos.push_back(GetComponent<MeshComponent>(entityID));
+		compos.push_back(GetComponent<VelocityComponent>(entityID));
+		compos.push_back(GetComponent<StateMachineComponent>(entityID));
+		compos.push_back(GetComponent<EmitterComponent>(entityID));
+		compos.push_back(GetComponent<CameraComponent>(entityID));
+		compos.push_back(GetComponent<ColliderComponent>(entityID));
+		compos.push_back(GetComponent<LightComponent>(entityID));
+		compos.push_back(GetComponent<SpriteComponent>(entityID));
+		return compos;
 	}
 }
 
-std::vector<Component*> ECS::GetAllFromEntity(int entityID)
-{
-	std::vector<Component*> compos;
-	compos.push_back(GetComponent<TransformComponent>(entityID));
-	compos.push_back(GetComponent<MeshComponent>(entityID));
-	return compos;
-}
+
 

@@ -1,7 +1,12 @@
 #include "pch.h"
 
-template<typename T>
-bool Condition<T>::Test(T* owner)
+namespace FSC
 {
-	return expected == OnTest(owner);
+
+	template<typename T>
+	bool Condition<T>::Test(T* owner)
+	{
+		return m_IsExpected == OnTest(owner);
+	}
+
 }

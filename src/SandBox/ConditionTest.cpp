@@ -2,7 +2,7 @@
 
 bool ConditionTest_SpacePressed::OnTest(Entity* pOwner)
 {
-	if(FS_InputsManager::Get()->GetKeyDown(Keyboard::SPACE))
+	if(InputsManager::GetKeyDown(Keyboard::SPACE))
 	{
 		return true;
 	}
@@ -12,7 +12,7 @@ bool ConditionTest_SpacePressed::OnTest(Entity* pOwner)
 
 bool ConditionTest_EnterPressed::OnTest(Entity* pOwner)
 {
-	if (FS_InputsManager::Get()->GetKeyDown(Keyboard::RETURN))
+	if (InputsManager::GetKeyDown(Keyboard::RETURN))
 	{
 		return true;
 	}

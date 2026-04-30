@@ -1,10 +1,16 @@
 #pragma once
 
-class EmitterSystem : public System
+namespace FSE
 {
-public:
-	EmitterSystem();
 
-	virtual void Update(float dt) override;
+	class EmitterSystem : public System
+	{
+	public:
+		EmitterSystem();
 
-};
+		virtual void Update(float dt) override;
+
+	};
+
+}
+

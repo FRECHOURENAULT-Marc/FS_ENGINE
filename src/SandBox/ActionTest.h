@@ -1,4 +1,5 @@
 #pragma once
+
 class ActionTest_Idle : public Action<Entity>
 {
 public:

@@ -1,9 +1,16 @@
 #pragma once
 
-class Component : public Object
+namespace FSE
 {
-public:
-	Component() : Object() {};
 
-	friend class ECS;
-};
+	class Component : public Object
+	{
+	public:
+		Component() : Object() {};
+
+		friend class ECS;
+	};
+
+}
+
+

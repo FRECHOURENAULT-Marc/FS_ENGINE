@@ -1,12 +1,19 @@
 #pragma once
 
-class CameraSystem : public System
+namespace FSE
 {
 
-public:
-	CameraSystem() : System() {};
+	class CameraSystem : public System
+	{
 
-	virtual void Update(float dt) override;
-};
+	public:
+		CameraSystem() : System() {};
+
+		virtual void Update(float dt) override;
+	};
+
+}
+
+
 
 

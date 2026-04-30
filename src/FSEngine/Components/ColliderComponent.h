@@ -1,34 +1,44 @@
 #pragma once
 
-class ColliderComponent : public Component
+namespace FSE
 {
-	virtual void Reset() override;
 
-	FS_Collider* mCollider = nullptr;
-	//TransformComponent* mTrs = nullptr; // To avoid multiple Get
+	class ColliderComponent : public Component
+	{
+		virtual void Reset() override;
 
-	std::vector<ColliderComponent*> mCollidingWith = std::vector<ColliderComponent*>();
-	bool IsColliding(ColliderComponent* other);
-	void AddColliding(ColliderComponent* other) { mCollidingWith.push_back(other); }
-	void ResetColliding() { mCollidingWith.clear(); }
+		std::string m_Tag = "";
 
-	void EnsureTransform();
-	void Update();
+		std::vector<ColliderComponent*> m_CollidingWith = std::vector<ColliderComponent*>();
+		Collider* m_Collider = nullptr;
 
-public:
-	ColliderComponent() : Component() {};
+		bool IsColliding(ColliderComponent* other);
+		void AddColliding(ColliderComponent* other) { m_CollidingWith.push_back(other); }
+		void ResetColliding() { m_CollidingWith.clear(); }
+		void AddToDefaultLayer();
+		void EnsureTransform();
+		void Update(); 
 
-	FS_Collider* GetCollider() { return mCollider; };
-	bool IsCollidingWith(int other);
-	bool IsCollidingWith(ColliderComponent* other);
+	public:
+		ColliderComponent() : Component() {};
 
+		Collider* GetCollider() { return m_Collider; };
+		const std::vector<ColliderComponent*>& GetColliding() { return m_CollidingWith; }
+		std::string GetTag() { return m_Tag; }
+		ColliderComponent* IsCollidingWith(int otherEntityID);
+		ColliderComponent* IsCollidingWith(ColliderComponent* other);
+		ColliderComponent* IsCollidingWith(std::string tag);
 
-	template<typename C>
-	C* SetType();
+		void AddToLayer(std::string _layerName);
+		void SetTag(std::string tag) { m_Tag = tag; }
+		template<typename C>
+		C* SetType();
 
-	friend class ECS;
-	friend class ColliderSystem;
-};
+		friend class ECS;
+		friend class ColliderSystem;
+	};
+
+}
 
 #include "ColliderComponent.inl"
 

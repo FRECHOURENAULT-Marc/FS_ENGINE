@@ -1,20 +1,25 @@
 #pragma once
 
-template<typename T>
-class Transition
+namespace FSC
 {
-protected:
-    std::vector<Condition<T>*> mConditions;
-	int mTransitionState;
 
-public:
-	Transition(int transitionState) : mTransitionState(transitionState) {}
+	template<typename T>
+	class Transition
+	{
+	protected:
+		std::vector<Condition<T>*> m_Conditions;
+		int m_TransitionState;
 
-	template<typename U>
-	U* AddCondition(bool expected = true);
-	
-	bool Try(T* owner);
-	int GetTransitionState() { return mTransitionState; }
-};
+	public:
+		Transition(int transitionState) : m_TransitionState(transitionState) {}
+
+		template<typename U>
+		U* AddCondition(bool m_IsExpected = true);
+
+		bool Try(T* owner);
+		int GetTransitionState() { return m_TransitionState; }
+	};
+
+}
 
 #include "Transition.inl"

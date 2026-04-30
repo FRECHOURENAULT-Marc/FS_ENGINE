@@ -1,11 +1,18 @@
 #pragma once
 
-class MoveSystem : public System
+namespace FSE
 {
 
-public:
-	MoveSystem() : System() {};
+	class MoveSystem : public System
+	{
 
-	virtual void Update(float dt) override;
-};
+	public:
+		MoveSystem() : System() {};
+
+		virtual void Update(float dt) override;
+	};
+
+}
+
+
 

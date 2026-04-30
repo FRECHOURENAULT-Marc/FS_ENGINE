@@ -37,51 +37,56 @@ public:
     int LineNumber = -1;
 };
 
-struct MeshGeometry
+namespace FSC 
 {
-	~MeshGeometry();
-
-	Microsoft::WRL::ComPtr<ID3DBlob> VertexBufferCPU = nullptr;
-	Microsoft::WRL::ComPtr<ID3DBlob> IndexBufferCPU  = nullptr;
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferGPU = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferGPU = nullptr;
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferUploader = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferUploader = nullptr;
-
-	UINT VertexByteStride = 0;
-	UINT VertexBufferByteSize = 0;
-	DXGI_FORMAT IndexFormat = DXGI_FORMAT_R16_UINT;
-	UINT IndexBufferByteSize = 0;
-    UINT IndexCount;
-
-	D3D12_VERTEX_BUFFER_VIEW VertexBufferView()const
+	struct MeshGeometry
 	{
-		D3D12_VERTEX_BUFFER_VIEW vbv;
-		vbv.BufferLocation = VertexBufferGPU->GetGPUVirtualAddress();
-		vbv.StrideInBytes = VertexByteStride;
-		vbv.SizeInBytes = VertexBufferByteSize;
+		~MeshGeometry();
 
-		return vbv;
-	}
+		Microsoft::WRL::ComPtr<ID3DBlob> m_VertexBufferCPU = nullptr;
+		Microsoft::WRL::ComPtr<ID3DBlob> m_IndexBufferCPU = nullptr;
 
-	D3D12_INDEX_BUFFER_VIEW IndexBufferView()const
-	{
-		D3D12_INDEX_BUFFER_VIEW ibv;
-		ibv.BufferLocation = IndexBufferGPU->GetGPUVirtualAddress();
-		ibv.Format = IndexFormat;
-		ibv.SizeInBytes = IndexBufferByteSize;
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_VertexBufferGPU = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_IndexBufferGPU = nullptr;
 
-		return ibv;
-	}
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_VertexBufferUploader = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_IndexBufferUploader = nullptr;
 
-	void DisposeUploaders()
-	{
-		VertexBufferUploader = nullptr;
-		IndexBufferUploader = nullptr;
-	}
-};
+		UINT m_VertexByteStride = 0;
+		UINT m_VertexBufferByteSize = 0;
+		DXGI_FORMAT m_IndexFormat = DXGI_FORMAT_R16_UINT;
+		UINT m_IndexBufferByteSize = 0;
+		UINT m_IndexCount;
+
+		D3D12_VERTEX_BUFFER_VIEW VertexBufferView()const
+		{
+			D3D12_VERTEX_BUFFER_VIEW vbv;
+			vbv.BufferLocation = m_VertexBufferGPU->GetGPUVirtualAddress();
+			vbv.StrideInBytes = m_VertexByteStride;
+			vbv.SizeInBytes = m_VertexBufferByteSize;
+
+			return vbv;
+		}
+
+		D3D12_INDEX_BUFFER_VIEW IndexBufferView()const
+		{
+			D3D12_INDEX_BUFFER_VIEW ibv;
+			ibv.BufferLocation = m_IndexBufferGPU->GetGPUVirtualAddress();
+			ibv.Format = m_IndexFormat;
+			ibv.SizeInBytes = m_IndexBufferByteSize;
+
+			return ibv;
+		}
+
+		void DisposeUploaders()
+		{
+			m_VertexBufferUploader = nullptr;
+			m_IndexBufferUploader = nullptr;
+		}
+	};
+}
+
+
 
 #ifndef ThrowIfFailed
 #define ThrowIfFailed(x)                                              \
