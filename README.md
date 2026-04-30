@@ -4,7 +4,7 @@ A 3D game engine developed with DX12 in C++ during 4 weeks.
 ## Setup
 - Run bin/make.bat
 - Open ide/FSEngine.sln
-- Choose "Game" project as starting project
+- Choose "Game" or "Sandbox" project as starting project
 - We suggest you to run it in Debug mode
 
 ### Additionnal notes
